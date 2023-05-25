@@ -1,0 +1,69 @@
+#version 330 core
+
+layout (location=0) out vec4 color;
+
+in vec4 v_color;
+in vec2 v_texCoord;
+flat in float v_texSlot;
+
+uniform sampler2D[16] textures;
+
+
+vec4 fat_pixel_sample(sampler2D tex, vec2 uv){
+	// https://jorenjoestar.github.io/post/pixel_art_filtering/
+
+
+	// -- CURRENT USE -- y'know... maybe this is just fine/correct
+	//https://www.shadertoy.com/view/MlB3D3
+	ivec2 texSize = textureSize(tex, 0);
+	vec2 pixel = uv * texSize;
+	pixel = floor(pixel) + min(fract(pixel) / fwidth(pixel), 1.0) - 0.5;
+	//pixel = floor(pixel) + smoothstep(0.0, 1.0, fract(pixel) / fwidth(pixel)) - 0.5; // <-- described as "extra sharp"??
+	return texture(tex, pixel / texSize);
+
+	// -- ATTEMPT AT CASEY STYLE --
+	// STEPS:
+	// 1: get uv in texture space (multiply by size of texture)
+	// 2: get span of uv with  u-0.5 dx & u+0.5 dx
+	// --- ^ take these coords and multiply them out by texture size to get it in texture space
+	// 3: "if" (for now use an actual if) the floor of the min and max vals are equal: return floor + 0.5 (middle)
+	// -- If not -- need to linear sample -> take floor(max) and find distance to it from min and max. Those are 
+	// -- the unnormalized sample ratios. 
+
+	//// STEP 1
+	//ivec2 texSize = textureSize(tex, 0);
+	//vec2 pixel = uv * texSize;
+	//// STEP 2
+	////vec2 deriv = vec2(dFdx(pixel).x, dFdy(pixel).y);
+	//vec2 pixMin = floor(pixel)+0.5 - fwidth(pixel);
+	//vec2 pixMax = floor(pixel)+0.5 + fwidth(pixel);
+	//// STEP 3 / 4??
+	//if(floor(pixMin) == floor(pixMax)) pixel = floor(pixMin)+0.5; // If sampling within one texel
+	//else pixel =  floor(pixMin) + 0.5 + max(((floor(pixMax) - pixMin) / (pixMax - pixMin)), 0.0); // this approach is interesting and produces interestring results
+	////pixel =  floor(pixMin) + 0.5 + (floor(pixMax) - pixMin) / (pixMax - pixMin);
+	//vec2 haha = pixel / texSize;
+	//return texture(tex, haha);
+
+}
+
+void main(){
+	switch(int(v_texSlot)){
+		case -1: color = v_color; break;
+		case 0: color = fat_pixel_sample(textures[0], v_texCoord) * v_color; break;
+		case 1: color = fat_pixel_sample(textures[1], v_texCoord) * v_color; break;
+		case 2: color = fat_pixel_sample(textures[2], v_texCoord) * v_color; break;
+		case 3: color = fat_pixel_sample(textures[3], v_texCoord) * v_color; break;
+		case 4: color = fat_pixel_sample(textures[4], v_texCoord) * v_color; break;
+		case 5: color = fat_pixel_sample(textures[5], v_texCoord) * v_color; break;
+		case 6: color = fat_pixel_sample(textures[6], v_texCoord) * v_color; break;
+		case 7: color = fat_pixel_sample(textures[7], v_texCoord) * v_color; break;
+		case 8: color = fat_pixel_sample(textures[8], v_texCoord) * v_color; break;
+		case 9: color = fat_pixel_sample(textures[9], v_texCoord) * v_color; break;
+		case 10: color = fat_pixel_sample(textures[10], v_texCoord) * v_color; break;
+		case 11: color = fat_pixel_sample(textures[11], v_texCoord) * v_color; break;
+		case 12: color = fat_pixel_sample(textures[12], v_texCoord) * v_color; break;
+		case 13: color = fat_pixel_sample(textures[13], v_texCoord) * v_color; break;
+		case 14: color = fat_pixel_sample(textures[14], v_texCoord) * v_color; break;
+		case 15: color = fat_pixel_sample(textures[15], v_texCoord) * v_color; break;
+	};
+}
