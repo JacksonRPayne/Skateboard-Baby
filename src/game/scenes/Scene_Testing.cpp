@@ -30,29 +30,29 @@ void RenderLevelTiles(Renderer* rend) {
 	// This whole section (apart from player render) is still slow btw 
 	sd.t.SetPosition(0.0f, 0.35f);
 	sd.s.SetValues(sd.atlas, 0, 0, 64, 64);
-	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetModelMatrix()); // TODO: implement w/o needing matrix
+	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetPosition(), sd.t.GetScale()); // TODO: implement w/o needing matrix
 	sd.t.Translate(0.5f, 0.0f);
 	sd.s.SetValues(sd.atlas, 64, 0, 64, 64);
-	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetModelMatrix());
+	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetPosition(), sd.t.GetScale());
 	for (int i = 0; i < 50; i++) {
 		sd.t.Translate(0.5f, 0.0f);
-		rend->DrawQuad(sd.atlas, sd.s, sd.t.GetModelMatrix());
+		rend->DrawQuad(sd.atlas, sd.s, sd.t.GetPosition(), sd.t.GetScale());
 	}
 	sd.t.Translate(0.5f, 0.0f);
 	sd.s.SetValues(sd.atlas, 128, 0, 64, 64);
-	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetModelMatrix());
+	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetPosition(), sd.t.GetScale());
 
 	sd.t.SetPosition(2.0, 0.25);
 	sd.s.SetValues(sd.atlas, 0, 128, 64, 64);
-	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetModelMatrix());
+	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetPosition(), sd.t.GetScale());
 	sd.s.SetValues(sd.atlas, 64, 128, 64, 64);
 	for (int i = 0; i < 20; i++) {
 		sd.t.Translate(0.5f, 0.0f);
-		rend->DrawQuad(sd.atlas, sd.s, sd.t.GetModelMatrix());
+		rend->DrawQuad(sd.atlas, sd.s, sd.t.GetPosition(), sd.t.GetScale());
 	}
 	sd.t.Translate(0.5f, 0.0f);
 	sd.s.SetValues(sd.atlas, 2 * 64, 128, 64, 64);
-	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetModelMatrix());
+	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetPosition(), sd.t.GetScale());
 
 	//sd.rail.Render(rend);
 }
@@ -65,7 +65,7 @@ void Load_Testing(){
 	//sd.player = std::move(Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f));
 	new (&sd.player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f); // <-- more goated than std::move
 	new (&sd.camera) Camera(Window::width, Window::height);
-	new (&sd.rail) HitBox(2.0, 25.0f * 0.5f, -0.25f, 0.125f, HitBoxType::GrindRail); // TODO: this calculation doesn't feel right...
+	new (&sd.rail) HitBox(2.0, 25.0f * 0.5f, -0.125f, 0.125f, HitBoxType::GrindRail); // TODO: this calculation doesn't feel right...
 }
 
 void Start_Testing() {

@@ -17,7 +17,7 @@ class Baby : public Entity
 {
 public:
 	// It can be assumed that this will never be *explicitly* called
-	Baby() : texture(nullptr), direction(0.0f), state(BabyState::Ground){}
+	Baby() : texture(nullptr), direction(0.0f), state(BabyState::Ground), nextJumpVel(0.0f){}
 	Baby(float xPos, float yPos, float xScale, float yScale, float rotation, const std::string name = "Baby");
 	Baby(Baby&& other)noexcept;
 	Baby& operator=(Baby&& other) noexcept;
@@ -30,7 +30,6 @@ public:
 	HitBox boardHitBox;
 	PhysicsController physicsController;
 	
-
 	// State variables
 	BabyState state;
 	float direction;
@@ -44,6 +43,14 @@ private:
 	void GroundedUpdate(float dt);
 	void AirUpdate(float dt);
 	void GrindUpdate(float dt);
+
+	// Abstracted input for support of multiple controllers
+	bool InputCrouch();
+	bool InputJump();
+	bool InputGrind();
+	// Returns direction (-1, 1)
+	float InputDirection();
+
 	// Animations
 	void InitializeAnimations();
 	static Animation idle;

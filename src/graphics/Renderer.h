@@ -36,9 +36,12 @@ public:
 	// Renders quad with texture
 	void DrawQuad(Texture* texture, const glm::mat4& modelMatrix);
 	// Renders quad with subtexture
+	// This is the most preffered method to render a quad
+	void DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec2 position, glm::vec2 scale);
+	// Use this for rotated quads ONLY: the matrix mu
 	void DrawQuad(Texture* texture, const SubTexture &subTexture, const glm::mat4& modelMatrix);
 	// Draws a line for debugging ONLY. Not written batched, so performance is slow but it's only for debugging
-	// NEVER under ANY CIRCUMSTANCES call this in a release version or for non debuggin purposes
+	// NEVER under ANY CIRCUMSTANCES call this in a release version or for non debugging purposes
 	void DrawLine(glm::vec2 startPos, glm::vec2 endPos, float width = 2.0f,  glm::vec4 color = {0.0f, 1.0f, 0.0f, 1.0f});
 	// Ends the rendering for the frame (maybe flushes)
 	void End();
@@ -63,8 +66,9 @@ private:
 	// Stores the VBO buffer and a pointer to iterate through it
 	QuadVertex* quadVertices;
 	QuadVertex* quadBufferPointer;
-	// Stores default quad vertices to be translated
+	// Stores default quad vertices to be translated by matrix
 	glm::vec4 quadVertexPositions[4];
+	glm::vec2 quadVertexPosSimple[4];
 
 	unsigned int lineVAO;
 	unsigned int lineVBO;

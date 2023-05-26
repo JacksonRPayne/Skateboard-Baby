@@ -75,7 +75,7 @@ void Baby::InitializeAnimations() {
 
 void Baby::Render(Renderer* renderer) {
 
-	renderer->DrawQuad(texture, subTexture, transform.GetModelMatrix());
+	renderer->DrawQuad(texture, subTexture, transform.position, transform.scale);
 	//bodyHitBox.Render(renderer);
 	//boardHitBox.Render(renderer);
 }
@@ -105,22 +105,27 @@ void Baby::Update(float dt) {
 
 
 void Baby::GroundedUpdate(float dt) {
-
-	if (InputManager::GetKey(GLFW_KEY_D)) {
-		direction = 1.0f;
+	// Gets directional input
+	float inputDir = InputDirection();
+	if (inputDir) {
+		// Direction player is facing
+		direction = inputDir;
+		// Directio player is actually moving
+		float velSign = physicsController.velocity.x >= 0 ? 1.0f : -1.0f;
+		bool atMaxVel = std::abs(physicsController.velocity.x) >= MAX_GROUND_VELOCITY;
 		animator.PlayOnce("ride", true, true);
 		transform.SetScaleX(direction);
 		// Hit max velocity -> set velocity to max
-		if (physicsController.velocity.x >= MAX_GROUND_VELOCITY) {
-			physicsController.velocity.x = MAX_GROUND_VELOCITY;
+		if (atMaxVel) {
+			physicsController.velocity.x = velSign * MAX_GROUND_VELOCITY;
 			physicsController.acceleration.x = 0;
 		}
 		// Hasn't hit max vel -> apply acceleration
-		else {
-			physicsController.acceleration.x = GROUND_ACCELERATION;
+		if(!atMaxVel || direction !=velSign){
+			physicsController.acceleration.x = direction * GROUND_ACCELERATION;
 		}
 	}
-	else if (InputManager::GetKey(GLFW_KEY_A)) {
+	/*else if (InputManager::GetKey(GLFW_KEY_A)) {
 		direction = -1.0f;
 		animator.PlayOnce("ride", true, true);
 		transform.SetScaleX(direction);
@@ -131,7 +136,7 @@ void Baby::GroundedUpdate(float dt) {
 		else {
 			physicsController.acceleration.x = -GROUND_ACCELERATION;
 		}
-	}
+	}*/
 	// No key pressed but moving -> apply friction
 	else if (std::abs(physicsController.velocity.x > 0)) { 
 		animator.PlayOnce("idle", true, true);
@@ -148,7 +153,7 @@ void Baby::GroundedUpdate(float dt) {
 	}
 
 	// Crouch
-	if (InputManager::GetKey(GLFW_KEY_SPACE)) {
+	if (InputCrouch()) {
 		animator.PlayOnce("crouch", true, true);
 		// Adjust hitbox to crouch
 		bodyHitBox.localTransform.SetScaleY(0.7f);
@@ -157,7 +162,7 @@ void Baby::GroundedUpdate(float dt) {
 		nextJumpVel = std::min(nextJumpVel + JUMP_CHARGE_RATE*dt, JUMP_VEL);
 	}
 	// Jump
-	else if (InputManager::GetKeyUp(GLFW_KEY_SPACE)) {
+	else if (InputJump()) {
 		// Restore hitbox
 		bodyHitBox.localTransform.SetScaleY(0.8f);
 		bodyHitBox.localTransform.SetPositionY(0.0f);
@@ -173,7 +178,7 @@ void Baby::GroundedUpdate(float dt) {
 
 void Baby::AirUpdate(float dt) {
 	// Grind
-	if (touchingRail && InputManager::GetKeyDown(GLFW_KEY_LEFT_SHIFT)) {
+	if (touchingRail && InputGrind()) {
 		state = BabyState::Grind;
 		// Find new velocity with correct sign
 		float xVel = std::min(std::abs(physicsController.velocity.x) + GRIND_BONUS_SPEED, GRIND_MAX_SPEED);
@@ -203,7 +208,7 @@ void Baby::AirUpdate(float dt) {
 void Baby::GrindUpdate(float dt) {
 	if (!touchingRail) state = BabyState::Air;
 	// Crouch
-	else if (InputManager::GetKey(GLFW_KEY_SPACE)) {
+	else if (InputCrouch()) {
 		animator.PlayOnce("crouch", true, true);
 		bodyHitBox.localTransform.SetScaleY(0.7f);
 		bodyHitBox.localTransform.SetPositionY(0.05f);
@@ -211,7 +216,7 @@ void Baby::GrindUpdate(float dt) {
 		nextJumpVel = std::min(nextJumpVel + JUMP_CHARGE_RATE * dt, JUMP_VEL);
 	}
 	// Jump
-	else if (InputManager::GetKeyUp(GLFW_KEY_SPACE)) { // <-- think about if grind should still have charge/hold jumps
+	else if (InputJump()) { // <-- think about if grind should still have charge/hold jumps
 		bodyHitBox.localTransform.SetScaleY(0.8f);
 		bodyHitBox.localTransform.SetPositionY(0.0f);
 		physicsController.velocity.y = -nextJumpVel;
@@ -222,6 +227,28 @@ void Baby::GrindUpdate(float dt) {
 	}
 }
 
+float Baby::InputDirection() {
+	// If there is keyboard input
+	if (InputManager::GetKey(GLFW_KEY_D)) return 1.0f;
+	if (InputManager::GetKey(GLFW_KEY_A)) return -1.0f;
+	// If there is gamepad input 
+	float axisInput = InputManager::GetGamepadAxisDigital(GLFW_GAMEPAD_AXIS_LEFT_X);
+	if (axisInput) return axisInput;
+	// No directional input
+	return 0;
+}
+
+bool Baby::InputCrouch() {
+	return InputManager::GetKey(GLFW_KEY_SPACE) || InputManager::GetGamepadButton(GLFW_GAMEPAD_BUTTON_A);
+}
+
+bool Baby::InputJump() {
+	return InputManager::GetKeyUp(GLFW_KEY_SPACE) || InputManager::GetGamepadButtonUp(GLFW_GAMEPAD_BUTTON_A);
+}
+
+bool Baby::InputGrind() {
+	return InputManager::GetKeyDown(GLFW_KEY_LEFT_SHIFT) || InputManager::GetGamepadButtonDown(GLFW_GAMEPAD_BUTTON_Y);
+}
 
 Baby::Baby(Baby&& other) noexcept {
 	this->transform = other.transform;

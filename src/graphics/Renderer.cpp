@@ -62,6 +62,11 @@ void Renderer::Initialize() {
 	quadVertexPositions[1] = {  0.5f, -0.5f, 0.0f, 1.0f };
 	quadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.0f };
 	quadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
+	// Default quad vertices
+	quadVertexPosSimple[0] = { -0.5f, -0.5f };
+	quadVertexPosSimple[1] = {  0.5f, -0.5f };
+	quadVertexPosSimple[2] = {  0.5f,  0.5f };
+	quadVertexPosSimple[3] = { -0.5f,  0.5f };
 
 	// Populate sampler2D array
 	int textureIDs[MAX_TEXTURES] = {};
@@ -159,6 +164,64 @@ void Renderer::DrawQuad(Texture* texture, const glm::mat4& modelMatrix)  {
 	DrawQuad(texture, defaultSubTexture, modelMatrix);
 }
 
+void Renderer::DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec2 position, glm::vec2 scale) {
+	// Another draw call needed
+	if (numIndices > MAX_INDICES - 6) {
+		End();
+		Start();
+	}
+
+	// Represents texture the draw call is using
+	float texSlot = -1.0f;
+
+	// Working with not previously bound texture;
+	if (texture->GetBoundSlot() < 0) {
+		// New draw call if texture limit reached
+		if (numBoundTextures >= MAX_TEXTURES) {
+			End();
+			Start();
+		}
+
+		// Bind the new texture and keep track of it in boundTextures
+		texture->Bind(numBoundTextures);
+		if (numBoundTextures < MAX_TEXTURES) boundTextures[numBoundTextures] = texture; // If statement to get rid of buffer overrun warning
+		numBoundTextures++;
+	}
+
+	texSlot = (float)texture->GetBoundSlot();
+	glm::vec2 offset = scale / 2.0f;
+
+	// Bottom left vertex
+	quadBufferPointer->position = glm::vec3(position.x - offset.x, position.y - offset.y, 0.0f);
+	quadBufferPointer->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	quadBufferPointer->texCoord = { subTexture.xCoord, subTexture.yCoord };
+	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer++;
+
+	// Bottom right vertex
+	quadBufferPointer->position = glm::vec3(position.x + offset.x, position.y - offset.y, 0.0f);
+	quadBufferPointer->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	quadBufferPointer->texCoord = { subTexture.xCoord + subTexture.coordWidth, subTexture.yCoord };
+	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer++;
+
+	// Top right vertex
+	quadBufferPointer->position = glm::vec3(position.x + offset.x, position.y + offset.y, 0.0f);
+	quadBufferPointer->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	quadBufferPointer->texCoord = { subTexture.xCoord + subTexture.coordWidth, subTexture.yCoord + subTexture.coordHeight };
+	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer++;
+
+	// Top left vertex
+	quadBufferPointer->position = glm::vec3(position.x - offset.x, position.y + offset.y, 0.0f);
+	quadBufferPointer->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	quadBufferPointer->texCoord = { subTexture.xCoord, subTexture.yCoord + subTexture.coordHeight };
+	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer++;
+
+	numIndices += 6;
+}
+
 
 void Renderer::DrawQuad(Texture* texture, const SubTexture &subTexture, const glm::mat4& modelMatrix) {
 	// Another draw call needed
@@ -216,6 +279,8 @@ void Renderer::DrawQuad(Texture* texture, const SubTexture &subTexture, const gl
 
 	numIndices += 6;
 }
+
+
 
 void Renderer::DrawLine(glm::vec2 startPos, glm::vec2 endPos, float width, glm::vec4 color) {
 	// Set up vertices
