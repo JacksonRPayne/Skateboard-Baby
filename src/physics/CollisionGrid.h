@@ -15,6 +15,8 @@
 // -- Hitboxes should be able to define their own collision check and render functions in a NONPOLYMORPHIC way
 // ---- Member function pointer that can be redirected, but if not set, is set to default functions.
 // ---- This way I can easily support non-box geometry without creating some weird system of different hitbox types.
+// ---- This part doesn't make as much sense as I thought it would unless the CheckCollision func somehow references
+// ---- a function pointer in "other" to determine bounds. <-- this is what should have funcptr not checkcollision
 
 class CollisionGrid
 {

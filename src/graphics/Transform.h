@@ -14,7 +14,7 @@ public:
 	void Translate(float xTrans, float yTrans) { Translate(glm::vec2(xTrans, yTrans)); }
 
 	// Additive scaling (not relative to current size)
-	void Scale(glm::vec2 scaling) { scale = scale + scaling; UpdateModelMatrix(); }
+	void Scale(glm::vec2 scaling) { scale = scale + scaling; UpdateModelMatrix(); } 
 	void Scale(float xScale, float yScale) { Scale(glm::vec2(xScale, yScale)); }
 	// Multiplicative scaling (relative to current size)
 	void ScaleFactor(glm::vec2 scaling) { scale = scale * scaling; UpdateModelMatrix();}
@@ -23,7 +23,8 @@ public:
 	void Rotate(float degrees) { rotation += degrees;  }
 
 	// Getters
-	const glm::mat4& GetModelMatrix() { return modelMatrix; }
+	const glm::mat4& GetModelMatrix() { return modelMatrix; } // TODO: I imagine I'll b putting calculation back in here
+	// Want to change renderer to take pos and scale to speed things up esp with many quads -- don't need matrix ops
 	const glm::vec2& GetPosition() const { return position; }
 	const glm::vec2& GetScale() const { return scale; }
 	float GetRotation() const { return rotation; }

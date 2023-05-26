@@ -7,7 +7,7 @@ Renderer SceneManager::renderer;
 
 void SceneManager::Init() {
 	ResourceManager::LoadShader("res/shaders/default.vert", "res/shaders/default.frag", "default");
-	renderer = Renderer(nullptr, ResourceManager::GetShader("default"));
+	new (&SceneManager::renderer) Renderer(nullptr, ResourceManager::GetShader("default")); // Magic, I love it
 }
 
 void SceneManager::Update(float dt) {

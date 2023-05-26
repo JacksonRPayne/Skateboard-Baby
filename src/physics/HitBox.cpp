@@ -1,11 +1,16 @@
 #include "Hitbox.h"
 
-HitBox::HitBox(): localTransform(), parentEntity(nullptr), collisionCallback(nullptr), tag(HitBoxType::None), active(true){}
+HitBox::HitBox(): localTransform(), parentEntity(nullptr), collisionCallback(nullptr), tag(HitBoxType::None), active(true), next(nullptr){}
 
 HitBox::HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent, 
 	void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag, bool active)
 	: localTransform(xPos, yPos, xScale, yScale, 0.0f), parentEntity(parent), collisionCallback(callback),
 	tag(tag), active(active), next(nullptr){}
+
+HitBox::HitBox(float lefBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag, bool active) 
+	: localTransform((rightBound + lefBound) / 2.0f, (upperBound + lowerBound) / 2.0f, (rightBound - lefBound), (lowerBound - upperBound), 0.0f),
+	parentEntity(nullptr), collisionCallback(nullptr), tag(tag), active(active), next(nullptr){
+}
 
 bool HitBox::CheckCollision(const HitBox& other) {
 	if (!active || !other.active) return false;
@@ -21,7 +26,7 @@ bool HitBox::CheckCollision(const HitBox& other) {
 					 (pos.y - size.y < otherPos.y + otherSize.y);
 	
 	if (collision) {
-		(*collisionCallback)(*this, other);
+		if(collisionCallback) (*collisionCallback)(*this, other);
 	}
 
 	return collision;
@@ -34,8 +39,10 @@ bool HitBox::Contains(glm::vec2 point) {
 	return (point.x > pos.x - size.x) && (point.x < pos.x + size.x) && (point.y < pos.y + size.y) && (point.y > pos.y - size.y);
 }
 
-glm::vec2 HitBox::GetGlobalPosition() const{ 
-	return parentEntity->transform.GetPosition() + localTransform.GetPosition(); 
+glm::vec2 HitBox::GetGlobalPosition() const{
+	// Option to have or not have parent entity
+	if(parentEntity) return parentEntity->transform.GetPosition() + localTransform.GetPosition();
+	return localTransform.GetPosition();
 }
 
 void HitBox::Render(Renderer* renderer) {

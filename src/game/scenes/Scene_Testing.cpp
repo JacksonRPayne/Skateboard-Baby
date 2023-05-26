@@ -10,6 +10,7 @@ struct SceneTestingData {
 	Texture* atlas;
 	Transform t = Transform(0.0f, 0.35f, 0.5f, 0.5f, 0.0f);
 	SubTexture s = SubTexture();
+	HitBox rail;
 
 	void Update(float dt) {
 		player.Update(dt);
@@ -53,6 +54,7 @@ void RenderLevelTiles(Renderer* rend) {
 	sd.s.SetValues(sd.atlas, 2 * 64, 128, 64, 64);
 	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetModelMatrix());
 
+	//sd.rail.Render(rend);
 }
 
 void Load_Testing(){
@@ -60,8 +62,10 @@ void Load_Testing(){
 	sd.atlas = ResourceManager::LoadTexture("res/textures/TextureAtlas.png", "atlas");
 
 	// Populate scene data
-	sd.player = std::move(Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f));
-	sd.camera = Camera(Window::width, Window::height);
+	//sd.player = std::move(Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f));
+	new (&sd.player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f); // <-- more goated than std::move
+	new (&sd.camera) Camera(Window::width, Window::height);
+	new (&sd.rail) HitBox(2.0, 25.0f * 0.5f, -0.25f, 0.125f, HitBoxType::GrindRail); // TODO: this calculation doesn't feel right...
 }
 
 void Start_Testing() {
@@ -94,7 +98,9 @@ void Update_Testing(float dt) {
 	if (InputManager::GetKey(GLFW_KEY_RIGHT_CONTROL)) {
 		sd.camera.transform.Scale(4.0f * dt, 4.0f * dt);
 	}
-	
+
+	// Brute force collision check for now
+	sd.player.boardHitBox.CheckCollision(sd.rail);
 	sd.Update(dt);
 	// This is so far from what I was trying to do haha
 	float playerX = sd.player.transform.GetPosition().x;

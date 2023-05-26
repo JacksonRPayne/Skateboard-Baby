@@ -9,7 +9,8 @@
 
 enum class BabyState {
 	Ground = 0,
-	Air = 1
+	Air = 1,
+	Grind = 2
 };
 
 class Baby : public Entity
@@ -34,17 +35,22 @@ public:
 	BabyState state;
 	float direction;
 	Animator animator;
+	bool touchingRail = false;
+	float railY = -1.0f;
+	float nextJumpVel;
 
 private:
 	// Update for different states
 	void GroundedUpdate(float dt);
 	void AirUpdate(float dt);
-
-	Texture* texture;
-	SubTexture subTexture;
+	void GrindUpdate(float dt);
 	// Animations
 	void InitializeAnimations();
 	static Animation idle;
 	static Animation ride;
+	static Animation crouch;
+
+	Texture* texture;
+	SubTexture subTexture;
 };
 

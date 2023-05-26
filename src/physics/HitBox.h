@@ -7,7 +7,8 @@
 enum class HitBoxType {
 	None = 0,
 	Ground = 1,
-	Player = 2
+	Player = 2,
+	GrindRail = 3
 };
 
 struct HitBox
@@ -16,6 +17,7 @@ struct HitBox
 	HitBox();
 	HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent,
 		void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox),  HitBoxType tag=HitBoxType::None, bool active=true);
+	HitBox(float lefBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag = HitBoxType::None, bool active = true);
 
 	// Checks collision with another hitbox and calls parent entity callback
 	// TODO: idea: give ability to pass custom collision detection function as fptr. Would be good for things like ramps
@@ -41,15 +43,15 @@ struct HitBox
 
 	// --Specified Getters--
 	// Corners
-	glm::vec2 TopLeft() { return GetGlobalPosition() + glm::vec2(-localTransform.GetScale().x / 2.0f, -localTransform.GetScale().y / 2.0f); }
-	glm::vec2 TopRight() { return GetGlobalPosition() + glm::vec2(localTransform.GetScale().x / 2.0f, -localTransform.GetScale().y / 2.0f); }
-	glm::vec2 BottomLeft() { return GetGlobalPosition() + glm::vec2(-localTransform.GetScale().x / 2.0f, localTransform.GetScale().y / 2.0f); }
-	glm::vec2 BottomRight() { return GetGlobalPosition() + glm::vec2(localTransform.GetScale().x / 2.0f, localTransform.GetScale().y / 2.0f); }
+	glm::vec2 TopLeft() const { return GetGlobalPosition() + glm::vec2(-localTransform.GetScale().x / 2.0f, -localTransform.GetScale().y / 2.0f); }
+	glm::vec2 TopRight() const { return GetGlobalPosition() + glm::vec2(localTransform.GetScale().x / 2.0f, -localTransform.GetScale().y / 2.0f); }
+	glm::vec2 BottomLeft() const { return GetGlobalPosition() + glm::vec2(-localTransform.GetScale().x / 2.0f, localTransform.GetScale().y / 2.0f); }
+	glm::vec2 BottomRight() const { return GetGlobalPosition() + glm::vec2(localTransform.GetScale().x / 2.0f, localTransform.GetScale().y / 2.0f); }
 	// Edges
-	float TopBound() { return GetGlobalPosition().y - (localTransform.GetScale().y / 2.0f); }
-	float BottomBound(){ return GetGlobalPosition().y + (localTransform.GetScale().y / 2.0f); }
-	float LeftBound(){ return GetGlobalPosition().x - (localTransform.GetScale().x / 2.0f); }
-	float RightBound(){ return GetGlobalPosition().x + (localTransform.GetScale().x / 2.0f); }
+	float TopBound() const { return GetGlobalPosition().y - (localTransform.GetScale().y / 2.0f); }
+	float BottomBound() const { return GetGlobalPosition().y + (localTransform.GetScale().y / 2.0f); }
+	float LeftBound() const { return GetGlobalPosition().x - (localTransform.GetScale().x / 2.0f); }
+	float RightBound()const { return GetGlobalPosition().x + (localTransform.GetScale().x / 2.0f); }
 
 };
 

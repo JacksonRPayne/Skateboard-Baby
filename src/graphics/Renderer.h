@@ -22,10 +22,11 @@ public:
 	// For throwaways
 	Renderer();
 	Renderer(Camera* camera, Shader* shader);
+	// Placement new only
 	Renderer(const Renderer& other) = delete;
 	Renderer operator=(const Renderer& other) = delete;
-	Renderer(const Renderer&& other); // TODO: IMPLEMENT
-	Renderer operator=(const Renderer&& other);
+	Renderer(const Renderer&& other) = delete;
+	Renderer operator=(const Renderer&& other) = delete;
 	~Renderer();
 
 	// Starts the rendering for the frame
