@@ -21,7 +21,8 @@ Animation Baby::idle;
 Animation Baby::ride;
 Animation Baby::crouch;
 Animation Baby::grind;
-
+Animation Baby::jumpAscend;
+Animation Baby::jumpDescend;
 
 void OnBodyCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 
@@ -52,7 +53,7 @@ void Baby::InitializeAnimations() {
 	idle.AddFrame(Frame(SubTexture(texture, 5 * 128, 0, 128, 128)));
 	animator.AddAnimation("idle", &idle);
 
-	ride.SetPlaySpeed(ANIM_SPEED+6.0f);
+	ride.SetPlaySpeed(ANIM_SPEED + 6.0f);
 	ride.AddFrame(Frame(SubTexture(texture, 0 * 128, 128 + 10, 128, 128)));
 	//ride.AddFrame(Frame(SubTexture(texture, 1 * 128, 128 + 10, 128, 128)));
 	ride.AddFrame(Frame(SubTexture(texture, 2 * 128, 128 + 10, 128, 128)));
@@ -61,7 +62,7 @@ void Baby::InitializeAnimations() {
 	ride.AddFrame(Frame(SubTexture(texture, 5 * 128, 128 + 10, 128, 128)));
 	ride.AddFrame(Frame(SubTexture(texture, 6 * 128, 128 + 10, 128, 128)));
 	ride.AddFrame(Frame(SubTexture(texture, 7 * 128, 128 + 10, 128, 128)));
-	ride.AddFrame(Frame(SubTexture(texture, 0 * 128, 2* 128 + 20, 128, 128)));
+	ride.AddFrame(Frame(SubTexture(texture, 0 * 128, 2 * 128 + 20, 128, 128)));
 	ride.AddFrame(Frame(SubTexture(texture, 1 * 128, 2 * 128 + 20, 128, 128)));
 	ride.AddFrame(Frame(SubTexture(texture, 2 * 128, 2 * 128 + 20, 128, 128)));
 	ride.AddFrame(Frame(SubTexture(texture, 3 * 128, 2 * 128 + 20, 128, 128)));
@@ -72,12 +73,28 @@ void Baby::InitializeAnimations() {
 	crouch.AddFrame(Frame(SubTexture(texture, 6 * 128, 0, 128, 128)));
 	animator.AddAnimation("crouch", &crouch);
 
-	grind.SetPlaySpeed(ANIM_SPEED-2.0f);
+	grind.SetPlaySpeed(ANIM_SPEED - 2.0f);
 	grind.AddFrame(Frame(SubTexture(texture, 5 * 128, 2 * 128 + 20, 128, 128)));
 	grind.AddFrame(Frame(SubTexture(texture, 6 * 128, 2 * 128 + 20, 128, 128)));
 	grind.AddFrame(Frame(SubTexture(texture, 7 * 128, 2 * 128 + 20, 128, 128)));
 	grind.AddFrame(Frame(SubTexture(texture, 6 * 128, 2 * 128 + 20, 128, 128)));
 	animator.AddAnimation("grind", &grind);
+
+	jumpAscend.SetPlaySpeed(ANIM_SPEED + 8.0f);
+	jumpAscend.AddFrame(Frame(SubTexture(texture, 0 * 128, 3 * 128 + 30, 128, 128)));
+	//jump.AddFrame(Frame(SubTexture(texture, 1 * 128, 3 * 128 + 30, 128, 128)));
+	jumpAscend.AddFrame(Frame(SubTexture(texture, 2 * 128, 3 * 128 + 30, 128, 128)));
+	jumpAscend.AddFrame(Frame(SubTexture(texture, 2 * 128, 3 * 128 + 30, 128, 128)));
+	jumpAscend.AddFrame(Frame(SubTexture(texture, 3 * 128, 3 * 128 + 30, 128, 128)));
+	jumpAscend.AddFrame(Frame(SubTexture(texture, 4 * 128, 3 * 128 + 30, 128, 128)));
+	jumpAscend.AddFrame(Frame(SubTexture(texture, 5 * 128, 3 * 128 + 30, 128, 128)));
+	jumpAscend.AddFrame(Frame(SubTexture(texture, 6 * 128, 3 * 128 + 30, 128, 128)));
+	jumpAscend.AddFrame(Frame(SubTexture(texture, 7 * 128, 3 * 128 + 30, 128, 128)));
+	animator.AddAnimation("jumpAscend", &jumpAscend);
+
+	jumpDescend.SetPlaySpeed(ANIM_SPEED);
+	jumpDescend.AddFrame(Frame(SubTexture(texture, 0 * 128, 4 * 128 + 40, 128, 128)));
+	animator.AddAnimation("jumpDescend", &jumpDescend);
 }
 
 
@@ -207,8 +224,14 @@ void Baby::AirUpdate(float dt) {
 	// In the air
 	else if (transform.GetPosition().y < 0) {
 		// Changes to fastfall speed at peak of jump
-		if(physicsController.velocity.y < 0) physicsController.acceleration.y = FALLSPEED;
-		else physicsController.acceleration.y = FASTFALLSPEED;
+		if (physicsController.velocity.y < 0) {
+			physicsController.acceleration.y = FALLSPEED;
+			animator.PlayOnce("jumpAscend", false, true);
+		}
+		else {
+			physicsController.acceleration.y = FASTFALLSPEED;
+			animator.PlayOnce("jumpDescend", false, true);
+		}
 	}
 	// On the "ground"
 	else {
@@ -242,7 +265,7 @@ void Baby::GrindUpdate(float dt) {
 		physicsController.velocity.y = -nextJumpVel;
 		nextJumpVel = MIN_JUMP_VEL;
 		physicsController.acceleration.x = 0;
-		physicsController.velocity.x += JUMP_X_VEL * direction;
+		physicsController.velocity.x += JUMP_X_VEL * physicsController.XVelDirection();
 		state = BabyState::Air;
 		generateSparks = false;
 	}

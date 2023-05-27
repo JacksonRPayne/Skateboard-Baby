@@ -8,6 +8,15 @@ flat in float v_texSlot;
 
 uniform sampler2D[16] textures;
 
+// TODO: Thought of this one in the shower:
+// Have some uniforms (or maybe calculate) for size of the quad ur rendering,
+// and also the max uv val. Then you can use modular arithmetic to tile the texture
+// all while working within a sprite sheet. I think the formula would be:
+// new_uv = (uv * size/(texsize/128)) % max_uv
+//                ^ this term is a		^ this is the upper bound
+//					texture to world	  of the subtexture, its the
+//					space conversion	  value to wrap around
+//					sorta or someth
 
 vec4 fat_pixel_sample(sampler2D tex, vec2 uv){
 	// https://jorenjoestar.github.io/post/pixel_art_filtering/

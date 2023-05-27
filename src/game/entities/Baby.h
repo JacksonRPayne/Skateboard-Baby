@@ -60,6 +60,8 @@ private:
 	static Animation ride;
 	static Animation crouch;
 	static Animation grind;
+	static Animation jumpAscend;
+	static Animation jumpDescend;
 	// Sparks :D
 	Sparks sparks;
 	bool generateSparks = false;
