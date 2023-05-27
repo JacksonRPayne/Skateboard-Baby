@@ -32,6 +32,9 @@ public:
 	// Starts the rendering for the frame
 	void Start();
 	// Draws a colored quad (no texture)
+	// Preffered (faster)
+	void DrawQuad(glm::vec4 color, glm::vec2 position, glm::vec2 scale);
+	// For rotated quads only
 	void DrawQuad(glm::vec4 color, const glm::mat4& modelMatrix);
 	// Renders quad with texture
 	void DrawQuad(Texture* texture, const glm::mat4& modelMatrix);

@@ -20,6 +20,7 @@
 Animation Baby::idle;
 Animation Baby::ride;
 Animation Baby::crouch;
+Animation Baby::grind;
 
 
 void OnBodyCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
@@ -70,11 +71,22 @@ void Baby::InitializeAnimations() {
 	crouch.SetPlaySpeed(ANIM_SPEED);
 	crouch.AddFrame(Frame(SubTexture(texture, 6 * 128, 0, 128, 128)));
 	animator.AddAnimation("crouch", &crouch);
+
+	grind.SetPlaySpeed(ANIM_SPEED-2.0f);
+	grind.AddFrame(Frame(SubTexture(texture, 5 * 128, 2 * 128 + 20, 128, 128)));
+	grind.AddFrame(Frame(SubTexture(texture, 6 * 128, 2 * 128 + 20, 128, 128)));
+	grind.AddFrame(Frame(SubTexture(texture, 7 * 128, 2 * 128 + 20, 128, 128)));
+	grind.AddFrame(Frame(SubTexture(texture, 6 * 128, 2 * 128 + 20, 128, 128)));
+	animator.AddAnimation("grind", &grind);
 }
 
 
 void Baby::Render(Renderer* renderer) {
-
+	if (generateSparks) {
+		float intensity = physicsController.XSpeed() / GRIND_MAX_SPEED;
+		glm::vec2 pos = glm::vec2(-(transform.scale.x / 4.0f), transform.scale.y / 2.0f - boardHitBox.localTransform.scale.y / 2.0f);
+		sparks.GenerateSparks(transform.position + pos, direction, renderer, intensity);
+	}
 	renderer->DrawQuad(texture, subTexture, transform.position, transform.scale);
 	//bodyHitBox.Render(renderer);
 	//boardHitBox.Render(renderer);
@@ -107,7 +119,7 @@ void Baby::Update(float dt) {
 void Baby::GroundedUpdate(float dt) {
 	// Gets directional input
 	float inputDir = InputDirection();
-	if (inputDir) {
+	if (inputDir && !InputCrouch()) {
 		// Direction player is facing
 		direction = inputDir;
 		// Directio player is actually moving
@@ -179,16 +191,18 @@ void Baby::GroundedUpdate(float dt) {
 void Baby::AirUpdate(float dt) {
 	// Grind
 	if (touchingRail && InputGrind()) {
-		state = BabyState::Grind;
 		// Find new velocity with correct sign
 		float xVel = std::min(std::abs(physicsController.velocity.x) + GRIND_BONUS_SPEED, GRIND_MAX_SPEED);
-		float sign = physicsController.velocity.x >= 0 ? 1.0f : -1.0f;
+		float sign = physicsController.XVelDirection();
 		// Set velocity, and zero y vel and all acceleration
 		physicsController.velocity.x = xVel * sign;
 		physicsController.velocity.y = 0.0f;
 		physicsController.acceleration = glm::vec2(0.0f);
 		// Place baby on rail
 		transform.SetPositionY(railY-transform.GetScale().y/2.0f);
+		
+		state = BabyState::Grind;
+		animator.PlayOnce("grind", true, true);
 	}
 	// In the air
 	else if (transform.GetPosition().y < 0) {
@@ -206,7 +220,13 @@ void Baby::AirUpdate(float dt) {
 }
 
 void Baby::GrindUpdate(float dt) {
-	if (!touchingRail) state = BabyState::Air;
+	// Create epic sparks 
+	generateSparks = true;
+
+	if (!touchingRail) {
+		state = BabyState::Air;
+		generateSparks = false;
+	}
 	// Crouch
 	else if (InputCrouch()) {
 		animator.PlayOnce("crouch", true, true);
@@ -224,7 +244,9 @@ void Baby::GrindUpdate(float dt) {
 		physicsController.acceleration.x = 0;
 		physicsController.velocity.x += JUMP_X_VEL * direction;
 		state = BabyState::Air;
+		generateSparks = false;
 	}
+
 }
 
 float Baby::InputDirection() {
@@ -250,6 +272,7 @@ bool Baby::InputGrind() {
 	return InputManager::GetKeyDown(GLFW_KEY_LEFT_SHIFT) || InputManager::GetGamepadButtonDown(GLFW_GAMEPAD_BUTTON_Y);
 }
 
+/*
 Baby::Baby(Baby&& other) noexcept {
 	this->transform = other.transform;
 	this->name = "Baby";
@@ -281,4 +304,4 @@ Baby& Baby::operator=(Baby&& other) noexcept {
 	}
 
 	return *this;
-}
+}*/

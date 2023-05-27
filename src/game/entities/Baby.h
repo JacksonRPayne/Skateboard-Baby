@@ -5,7 +5,7 @@
 #include "physics/HitBox.h"
 #include "system/InputManager.h"
 #include "animation/Animator.h"
-
+#include "game/Sparks.h"
 
 enum class BabyState {
 	Ground = 0,
@@ -19,8 +19,11 @@ public:
 	// It can be assumed that this will never be *explicitly* called
 	Baby() : texture(nullptr), direction(0.0f), state(BabyState::Ground), nextJumpVel(0.0f){}
 	Baby(float xPos, float yPos, float xScale, float yScale, float rotation, const std::string name = "Baby");
-	Baby(Baby&& other)noexcept;
-	Baby& operator=(Baby&& other) noexcept;
+	// Baby is too fat to copy or move, use placement new
+	Baby(Baby& other) = delete;
+	Baby& operator=(Baby& other) = delete;
+	Baby(Baby&& other) = delete;
+	Baby& operator=(Baby&& other) = delete;
 	
 	void Render(Renderer* renderer) override;
 	void Update(float dt) override;
@@ -56,6 +59,10 @@ private:
 	static Animation idle;
 	static Animation ride;
 	static Animation crouch;
+	static Animation grind;
+	// Sparks :D
+	Sparks sparks;
+	bool generateSparks = false;
 
 	Texture* texture;
 	SubTexture subTexture;

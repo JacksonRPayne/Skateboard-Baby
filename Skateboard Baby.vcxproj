@@ -126,7 +126,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -140,6 +140,7 @@
     <ClCompile Include="src\animation\Animator.cpp" />
     <ClCompile Include="src\game\entities\Baby.cpp" />
     <ClCompile Include="src\game\Game.cpp" />
+    <ClCompile Include="src\game\Sparks.cpp" />
     <ClCompile Include="src\graphics\Renderer.cpp" />
     <ClCompile Include="src\graphics\Shader.cpp" />
     <ClCompile Include="src\graphics\Texture.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="src\game\entities\Entities.h" />
     <ClInclude Include="src\game\Game.h" />
     <ClInclude Include="src\game\scenes\Scenes.h" />
+    <ClInclude Include="src\game\Sparks.h" />
     <ClInclude Include="src\graphics\Renderer.h" />
     <ClInclude Include="src\graphics\Shader.h" />
     <ClInclude Include="src\graphics\Texture.h" />

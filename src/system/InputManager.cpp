@@ -37,6 +37,7 @@ bool InputManager::GetMouseButtonUp(int button){
 }
 
 float InputManager::GetGamepadAxisRaw(int axis) {
+	if (std::abs(gamePadAxes[axis]) <= GAMEPAD_DEAD_ZONE) return 0.0f;
 	return gamePadAxes[axis];
 }
 float InputManager::GetGamepadAxisDigital(int axis) {

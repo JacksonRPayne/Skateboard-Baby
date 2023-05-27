@@ -16,6 +16,9 @@ void Log::LogWarning(const std::string &warningMsg, bool newLine) {
 }
 
 void Log::LogFPS(float dt, int framesPerLog, bool newLine) {
+#ifdef _DEBUG
+
+
 	timeTracker += dt;
 
 	if (frameTracker >= framesPerLog) {
@@ -26,5 +29,7 @@ void Log::LogFPS(float dt, int framesPerLog, bool newLine) {
 		return;
 	}
 
-	frameTracker++;
+	frameTracker++; 
+
+#endif // DEBUG
 }

@@ -119,6 +119,47 @@ void Renderer::Start() {
 	quadBufferPointer = quadVertices;
 }
 
+
+void Renderer::DrawQuad(glm::vec4 color, glm::vec2 position, glm::vec2 scale) {
+	// Another draw call needed
+	if (numIndices > MAX_INDICES - 6) {
+		End();
+		Start();
+	}
+
+	float texSlot = -1.0f;
+	glm::vec2 offset = scale / 2.0f;
+	// Bottom left vertex
+	quadBufferPointer->position = glm::vec3(position.x - offset.x, position.y - offset.y, 0.0f);
+	quadBufferPointer->color = color;
+	quadBufferPointer->texCoord = { 0.0f, 0.0f };
+	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer++;
+
+	// Bottom right vertex
+	quadBufferPointer->position = glm::vec3(position.x + offset.x, position.y - offset.y, 0.0f);
+	quadBufferPointer->color = color;
+	quadBufferPointer->texCoord = { 1.0f, 0.0f };
+	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer++;
+
+	// Top right vertex
+	quadBufferPointer->position = glm::vec3(position.x + offset.x, position.y + offset.y, 0.0f);
+	quadBufferPointer->color = color;
+	quadBufferPointer->texCoord = { 1.0f, 1.0f };
+	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer++;
+
+	// Top left vertex
+	quadBufferPointer->position = glm::vec3(position.x - offset.x, position.y + offset.y, 0.0f);
+	quadBufferPointer->color = color;
+	quadBufferPointer->texCoord = { 0.0f, 1.0f };
+	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer++;
+
+	numIndices += 6;
+}
+
 void Renderer::DrawQuad(glm::vec4 color, const glm::mat4& modelMatrix) {
 	// Another draw call needed
 	if (numIndices > MAX_INDICES - 6) {
@@ -158,6 +199,7 @@ void Renderer::DrawQuad(glm::vec4 color, const glm::mat4& modelMatrix) {
 
 	numIndices += 6;
 }
+
 
 void Renderer::DrawQuad(Texture* texture, const glm::mat4& modelMatrix)  {
 	// Default constructor makes tex coords the whole texture
