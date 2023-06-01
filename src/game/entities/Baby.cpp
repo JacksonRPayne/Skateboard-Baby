@@ -15,7 +15,14 @@
 #define GRIND_BONUS_SPEED 0.5f
 #define GRIND_MAX_SPEED 5.5f
 
+// Balance meter
+#define METER_HEIGHT 0.12f
+#define BALANCE_TILT_FACTOR 0.8f
+#define BALANCE_TILT_SPEED 4.0f
+#define BALANCE_NOISE 4.0f
+
 #define ANIM_SPEED 7.0f
+
 
 Animation Baby::idle;
 Animation Baby::ride;
@@ -40,6 +47,8 @@ Baby::Baby(float xPos, float yPos, float xScale, float yScale, float rotation, c
 	direction(1.0f), bodyHitBox(0.0f, 0.0f, 0.45f, 0.8f, this, OnBodyCollision), boardHitBox(0.0f, 0.4f, 0.6f, 0.2f, this, OnBoardCollision),
 	nextJumpVel(MIN_JUMP_VEL){
 	texture = ResourceManager::GetTexture("baby");
+	meterSubTex = SubTexture(texture, 1 * 128, 4 * 128 + 40, 128, 64);
+	indicatorSubTex = SubTexture(texture, 1 * 128, 4 * 128 + 40+64, 128, 64);
 	InitializeAnimations();
 }
 
@@ -105,6 +114,7 @@ void Baby::Render(Renderer* renderer) {
 		sparks.GenerateSparks(transform.position + pos, direction, renderer, intensity);
 	}
 	renderer->DrawQuad(texture, subTexture, transform.position, transform.scale);
+	if(balancing) RenderBalanceMeter(renderer);
 	//bodyHitBox.Render(renderer);
 	//boardHitBox.Render(renderer);
 }
@@ -154,18 +164,6 @@ void Baby::GroundedUpdate(float dt) {
 			physicsController.acceleration.x = direction * GROUND_ACCELERATION;
 		}
 	}
-	/*else if (InputManager::GetKey(GLFW_KEY_A)) {
-		direction = -1.0f;
-		animator.PlayOnce("ride", true, true);
-		transform.SetScaleX(direction);
-		if (physicsController.velocity.x <= -MAX_GROUND_VELOCITY) {
-			physicsController.velocity.x = -MAX_GROUND_VELOCITY;
-			physicsController.acceleration.x = 0;
-		}
-		else {
-			physicsController.acceleration.x = -GROUND_ACCELERATION;
-		}
-	}*/
 	// No key pressed but moving -> apply friction
 	else if (std::abs(physicsController.velocity.x > 0)) { 
 		animator.PlayOnce("idle", true, true);
@@ -239,16 +237,20 @@ void Baby::AirUpdate(float dt) {
 		physicsController.velocity.y = 0;
 		physicsController.acceleration.y = 0;
 		state = BabyState::Ground;
+		balance = 0.0f;
 	}
 }
 
 void Baby::GrindUpdate(float dt) {
 	// Create epic sparks 
 	generateSparks = true;
-
+	balancing = true;
+	UpdateBalanceMeter(dt);
+	// End of rail
 	if (!touchingRail) {
 		state = BabyState::Air;
 		generateSparks = false;
+		balancing = false;
 	}
 	// Crouch
 	else if (InputCrouch()) {
@@ -268,8 +270,27 @@ void Baby::GrindUpdate(float dt) {
 		physicsController.velocity.x += JUMP_X_VEL * physicsController.XVelDirection();
 		state = BabyState::Air;
 		generateSparks = false;
+		balancing = false;
 	}
 
+}
+
+void Baby::UpdateBalanceMeter(float dt) {
+	// Follow tilt of board
+	balance += BALANCE_TILT_SPEED * BALANCE_TILT_FACTOR * balance * dt;
+	// User input
+	balance += InputManager::GetGamepadAxisRaw(GLFW_GAMEPAD_AXIS_LEFT_X) * dt * BALANCE_TILT_SPEED;
+	// Randomness
+	balance += (((float)2.0f * std::rand() / (float)RAND_MAX) - 1.0f) * BALANCE_NOISE * dt;
+	balance = std::clamp(balance, -1.0f, 1.0f);
+	indicatorPos.x = balance/2.5f;
+	indicatorPos.y = std::pow(balance/ 2.5f, 2);
+}
+
+void Baby::RenderBalanceMeter(Renderer* renderer) {
+	renderer->DrawQuad(texture, meterSubTex, glm::vec2(transform.position.x, transform.TopBoundary() - METER_HEIGHT), glm::vec2(1.0f, 0.5f));
+	renderer->DrawQuad(texture, indicatorSubTex,
+		glm::vec2(transform.position.x, transform.TopBoundary() - METER_HEIGHT) + indicatorPos, glm::vec2(1.0f, 0.5f));
 }
 
 float Baby::InputDirection() {
@@ -282,6 +303,8 @@ float Baby::InputDirection() {
 	// No directional input
 	return 0;
 }
+
+
 
 bool Baby::InputCrouch() {
 	return InputManager::GetKey(GLFW_KEY_SPACE) || InputManager::GetGamepadButton(GLFW_GAMEPAD_BUTTON_A);

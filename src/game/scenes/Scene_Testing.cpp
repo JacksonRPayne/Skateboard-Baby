@@ -30,7 +30,7 @@ void RenderLevelTiles(Renderer* rend) {
 	// This whole section (apart from player render) is still slow btw 
 	sd.t.SetPosition(0.0f, 0.35f);
 	sd.s.SetValues(sd.atlas, 0, 0, 64, 64);
-	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetPosition(), sd.t.GetScale()); // TODO: implement w/o needing matrix
+	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetPosition(), sd.t.GetScale());
 	sd.t.Translate(0.5f, 0.0f);
 	sd.s.SetValues(sd.atlas, 64, 0, 64, 64);
 	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetPosition(), sd.t.GetScale());

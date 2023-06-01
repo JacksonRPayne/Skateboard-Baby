@@ -27,6 +27,12 @@ public:
 	const glm::vec2& GetPosition() const { return position; }
 	const glm::vec2& GetScale() const { return scale; }
 	float GetRotation() const { return rotation; }
+	
+	// Specialized Getters
+	float TopBoundary() { return position.y - scale.y / 2.0f; }
+	float BottomBoundary() { return position.y + scale.y / 2.0f; }
+	float LeftBoundary() { return position.x - scale.x / 2.0f; }
+	float RightBoundary() { return position.x + scale.x / 2.0f; }
 
 	glm::mat4 GetViewMatrix() { UpdateModelMatrix(); return glm::inverse(modelMatrix); }
 

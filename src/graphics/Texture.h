@@ -20,16 +20,18 @@ public:
 	// Readies the texture to be used
 	void Bind(unsigned int slot =0);
 	// Binds 0 to slot, and sets boundSlot to -1
+	// NOTE: I don't actually use this in the renderer anymore so this is for explicitly unbinding a texture
+	// Which is something I don't actually know if anyone would ever need to do. I'll just keep it around though
 	void Unbind();
 
 	int GetBoundSlot() { return boundSlot; }
+	int boundSlot;
 
 	// Width and height data for image and number of color channels
 	int width, height, channels;
 private:
 	// Opengl id for texture
 	unsigned int texID;
-	int boundSlot;
 };
 
 struct SubTexture {

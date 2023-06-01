@@ -349,7 +349,7 @@ void Renderer::End() {
 	Flush();
 	// Unbinds all textures
 	for (unsigned int i = 0; i < numBoundTextures; i++) {
-		boundTextures[i]->Unbind();
+		boundTextures[i]->boundSlot = -1;
 	}
 	numBoundTextures = 0;
 }

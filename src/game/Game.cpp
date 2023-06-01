@@ -12,7 +12,7 @@ int Game::Run() {
     if (!glfwInit())
         return -1;
     // Create the window
-    Window* window = new Window(SCREEN_WIDTH, SCREEN_HEIGHT, name.c_str());
+    Window window(SCREEN_WIDTH, SCREEN_HEIGHT, name.c_str());
 
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -22,7 +22,7 @@ int Game::Run() {
     }
 
     // Must init window after GLAD init
-    window->Init();
+    window.Init();
 
     // Set up delta time calculation
     float deltaTime = 0.0f;
@@ -32,7 +32,7 @@ int Game::Run() {
     InitScenes();
 
     // Game loop
-    while (window->IsOpen())
+    while (window.IsOpen())
     {
         // Clear screen
         glClear(GL_COLOR_BUFFER_BIT);
@@ -49,7 +49,7 @@ int Game::Run() {
         //Log::LogFPS(deltaTime, 100);
 
         // Swap front and back buffers 
-        window->SwapBuffers();
+        window.SwapBuffers();
         // Update current frame inputs
         InputManager::Update();
         // Poll for and process events
@@ -58,7 +58,6 @@ int Game::Run() {
 
     // Free memory and end
     glfwTerminate();
-    delete window;
     ResourceManager::FreeAll();
     return 0;
 }

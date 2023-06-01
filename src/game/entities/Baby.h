@@ -28,17 +28,20 @@ public:
 	void Render(Renderer* renderer) override;
 	void Update(float dt) override;
 
-	// Components
+	// ----Components----
 	HitBox bodyHitBox;
 	HitBox boardHitBox;
 	PhysicsController physicsController;
 	
-	// State variables
+	// ----State variables----
 	BabyState state;
+	// For facing direction not moving direction
 	float direction;
 	Animator animator;
+	// Rail stuff
 	bool touchingRail = false;
 	float railY = -1.0f;
+	// For jump charging
 	float nextJumpVel;
 
 private:
@@ -46,6 +49,15 @@ private:
 	void GroundedUpdate(float dt);
 	void AirUpdate(float dt);
 	void GrindUpdate(float dt);
+	void UpdateBalanceMeter(float dt);
+
+	// Meter stuff
+	void RenderBalanceMeter(Renderer* renderer);
+	SubTexture meterSubTex; // For the meter itself
+	SubTexture indicatorSubTex; // The little baby face
+	bool balancing = false;
+	glm::vec2 indicatorPos = glm::vec2(0.0f);
+	float balance = 0.0f; // -1/1 == fall
 
 	// Abstracted input for support of multiple controllers
 	bool InputCrouch();

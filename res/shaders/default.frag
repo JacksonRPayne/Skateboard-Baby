@@ -23,6 +23,7 @@ vec4 fat_pixel_sample(sampler2D tex, vec2 uv){
 
 
 	// -- CURRENT USE -- y'know... maybe this is just fine/correct
+	// Update: I think its my monitor causing the blurryness... lol
 	//https://www.shadertoy.com/view/MlB3D3
 	ivec2 texSize = textureSize(tex, 0);
 	vec2 pixel = uv * texSize;
