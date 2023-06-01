@@ -19,6 +19,7 @@
 #define METER_HEIGHT 0.12f
 #define BALANCE_TILT_FACTOR 0.8f
 #define BALANCE_TILT_SPEED 4.0f
+#define BALANCE_TILT_SENSITIVITY 0.9f
 #define BALANCE_NOISE 4.0f
 
 #define ANIM_SPEED 7.0f
@@ -131,6 +132,9 @@ void Baby::Update(float dt) {
 		break;
 	case BabyState::Grind:
 		GrindUpdate(dt);
+		break;
+	case BabyState::FallOffRail:
+		FallOfRailUpdate(dt);
 		break;
 	}
 
@@ -252,6 +256,12 @@ void Baby::GrindUpdate(float dt) {
 		generateSparks = false;
 		balancing = false;
 	}
+	// Lost balance
+	else if (std::abs(balance) >= 1.0f) {
+		state = BabyState::FallOffRail;
+		generateSparks = false;
+		balancing = false;
+	}
 	// Crouch
 	else if (InputCrouch()) {
 		animator.PlayOnce("crouch", true, true);
@@ -275,11 +285,25 @@ void Baby::GrindUpdate(float dt) {
 
 }
 
+void Baby::FallOfRailUpdate(float dt) {
+	// In air
+	if (transform.GetPosition().y < 0) {
+		physicsController.acceleration.y = FASTFALLSPEED;
+	}
+	// On the "ground"
+	else {
+		transform.SetPositionY(0);
+		physicsController.velocity.y = 0;
+		physicsController.velocity.x = 0;
+		physicsController.acceleration.y = 0;
+	}
+}
+
 void Baby::UpdateBalanceMeter(float dt) {
 	// Follow tilt of board
 	balance += BALANCE_TILT_SPEED * BALANCE_TILT_FACTOR * balance * dt;
 	// User input
-	balance += InputManager::GetGamepadAxisRaw(GLFW_GAMEPAD_AXIS_LEFT_X) * dt * BALANCE_TILT_SPEED;
+	balance += InputDirectionRaw() * dt * BALANCE_TILT_SPEED * BALANCE_TILT_SENSITIVITY;
 	// Randomness
 	balance += (((float)2.0f * std::rand() / (float)RAND_MAX) - 1.0f) * BALANCE_NOISE * dt;
 	balance = std::clamp(balance, -1.0f, 1.0f);
@@ -301,10 +325,19 @@ float Baby::InputDirection() {
 	float axisInput = InputManager::GetGamepadAxisDigital(GLFW_GAMEPAD_AXIS_LEFT_X);
 	if (axisInput) return axisInput;
 	// No directional input
-	return 0;
+	return 0.0f;
 }
 
+float Baby::InputDirectionRaw() {
+	// If there is gamepad input 
+	float axisInput = InputManager::GetGamepadAxisRaw(GLFW_GAMEPAD_AXIS_LEFT_X);
+	if (axisInput) return axisInput;
+	// If there is keyboard input
+	if (InputManager::GetKey(GLFW_KEY_D)) return 1.0f;
+	if (InputManager::GetKey(GLFW_KEY_A)) return -1.0f;
 
+	return 0.0f;
+}
 
 bool Baby::InputCrouch() {
 	return InputManager::GetKey(GLFW_KEY_SPACE) || InputManager::GetGamepadButton(GLFW_GAMEPAD_BUTTON_A);

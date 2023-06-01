@@ -10,7 +10,8 @@
 enum class BabyState {
 	Ground = 0,
 	Air = 1,
-	Grind = 2
+	Grind = 2,
+	FallOffRail = 3
 };
 
 class Baby : public Entity
@@ -50,6 +51,7 @@ private:
 	void AirUpdate(float dt);
 	void GrindUpdate(float dt);
 	void UpdateBalanceMeter(float dt);
+	void FallOfRailUpdate(float dt);
 
 	// Meter stuff
 	void RenderBalanceMeter(Renderer* renderer);
@@ -65,6 +67,8 @@ private:
 	bool InputGrind();
 	// Returns direction (-1, 1)
 	float InputDirection();
+	// Returns analog direction if available (vals in btwn -1, 1)
+	float InputDirectionRaw();
 
 	// Animations
 	void InitializeAnimations();
