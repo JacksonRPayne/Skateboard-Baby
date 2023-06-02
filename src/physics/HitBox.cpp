@@ -1,15 +1,15 @@
 #include "Hitbox.h"
 
-HitBox::HitBox(): localTransform(), parentEntity(nullptr), collisionCallback(nullptr), tag(HitBoxType::None), active(true), next(nullptr){}
+HitBox::HitBox(): localTransform(), parentEntity(nullptr), collisionCallback(nullptr), tag(HitBoxType::None), active(true){}
 
 HitBox::HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent, 
-	void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag, bool active)
+	void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag, bool dynamic)
 	: localTransform(xPos, yPos, xScale, yScale, 0.0f), parentEntity(parent), collisionCallback(callback),
-	tag(tag), active(active), next(nullptr){}
+	tag(tag), dynamic(dynamic){}
 
-HitBox::HitBox(float lefBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag, bool active) 
+HitBox::HitBox(float lefBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag, bool dynamic)
 	: localTransform((rightBound + lefBound) / 2.0f, (upperBound + lowerBound) / 2.0f, (rightBound - lefBound), (lowerBound - upperBound), 0.0f),
-	parentEntity(nullptr), collisionCallback(nullptr), tag(tag), active(active), next(nullptr){
+	parentEntity(nullptr), collisionCallback(nullptr), tag(tag), dynamic(dynamic){
 }
 
 bool HitBox::CheckCollision(const HitBox& other) {

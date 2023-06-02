@@ -24,7 +24,6 @@
 
 #define ANIM_SPEED 7.0f
 
-
 Animation Baby::idle;
 Animation Baby::ride;
 Animation Baby::crouch;
@@ -297,6 +296,11 @@ void Baby::FallOfRailUpdate(float dt) {
 		physicsController.velocity.x = 0;
 		physicsController.acceleration.y = 0;
 	}
+	// JUST FOR DEBUGGING
+	if (InputManager::GetGamepadButton(GLFW_GAMEPAD_BUTTON_START)) {
+		state = BabyState::Ground;
+		balance = 0.0f;
+	}
 }
 
 void Baby::UpdateBalanceMeter(float dt) {
@@ -305,7 +309,7 @@ void Baby::UpdateBalanceMeter(float dt) {
 	// User input
 	balance += InputDirectionRaw() * dt * BALANCE_TILT_SPEED * BALANCE_TILT_SENSITIVITY;
 	// Randomness
-	balance += (((float)2.0f * std::rand() / (float)RAND_MAX) - 1.0f) * BALANCE_NOISE * dt;
+	balance += (((float)2.0f * std::rand() / (float)RAND_MAX) - 1.0f) * BALANCE_NOISE * dt * BALANCE_TILT_SPEED;
 	balance = std::clamp(balance, -1.0f, 1.0f);
 	indicatorPos.x = balance/2.5f;
 	indicatorPos.y = std::pow(balance/ 2.5f, 2);

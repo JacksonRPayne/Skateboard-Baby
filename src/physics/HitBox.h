@@ -16,8 +16,8 @@ struct HitBox
 	// --Basic Functions--
 	HitBox();
 	HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent,
-		void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox),  HitBoxType tag=HitBoxType::None, bool active=true);
-	HitBox(float lefBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag = HitBoxType::None, bool active = true);
+		void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox),  HitBoxType tag=HitBoxType::None, bool dynamic = false);
+	HitBox(float lefBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag = HitBoxType::None, bool dynamic = false);
 
 	// Checks collision with another hitbox and calls parent entity callback
 	// TODO: idea: give ability to pass custom collision detection function as fptr. Would be good for things like ramps
@@ -31,15 +31,18 @@ struct HitBox
 	glm::vec2 GetGlobalPosition() const;
 	
 	// --Variables--
-	bool active;
+	bool active = true;
+	int id = -1;
+	// So occupied cells doesn't have to be recalculated for each collision check
+	int cells[4] = { -1, -1, -1, -1 };
+	// Dynamic hitboxes change their global positions/scale, non-dynamic ones are set once and never changed
+	bool dynamic;
 	// Stores the position in relation to the parent entity
 	Transform localTransform;
 	Entity* parentEntity;
 	HitBoxType tag;
 	// Calls function on a collision
 	void(*collisionCallback)(const HitBox& thisHitBox, const HitBox& otherHitBox);
-	// For linkedlist within each collision grid cell
-	HitBox* next;
 
 	// --Specified Getters--
 	// Corners

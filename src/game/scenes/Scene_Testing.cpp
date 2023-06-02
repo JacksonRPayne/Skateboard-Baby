@@ -23,6 +23,8 @@ struct SceneTestingData {
 	}
 };
 
+// TODO: I'm gonna heap allocate this instead of stack. It saves a lot of headache, makes more
+// logical sense when loading/unloading, and isn't any slower really.
 SceneTestingData sd; // sd for "scene data", needs a short name bc its used a lot
 
 
