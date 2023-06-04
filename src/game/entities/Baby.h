@@ -6,6 +6,7 @@
 #include "system/InputManager.h"
 #include "animation/Animator.h"
 #include "game/Sparks.h"
+#include "physics/CollisionGrid.h"
 
 enum class BabyState {
 	Ground = 0,
@@ -19,7 +20,7 @@ class Baby : public Entity
 public:
 	// It can be assumed that this will never be *explicitly* called
 	Baby() : texture(nullptr), direction(0.0f), state(BabyState::Ground), nextJumpVel(0.0f){}
-	Baby(float xPos, float yPos, float xScale, float yScale, float rotation, const std::string name = "Baby");
+	Baby(float xPos, float yPos, float xScale, float yScale, float rotation, CollisionGrid* grid, const std::string name = "Baby");
 	// Baby is too fat to copy or move, use placement new
 	Baby(Baby& other) = delete;
 	Baby& operator=(Baby& other) = delete;
@@ -30,8 +31,8 @@ public:
 	void Update(float dt) override;
 
 	// ----Components----
-	HitBox bodyHitBox;
-	HitBox boardHitBox;
+	HitBox* bodyHitBox;
+	HitBox* boardHitBox;
 	PhysicsController physicsController;
 	
 	// ----State variables----

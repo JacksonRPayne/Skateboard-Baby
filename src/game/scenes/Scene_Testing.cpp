@@ -8,9 +8,10 @@ struct SceneTestingData {
 	Baby player;
 	Camera camera;
 	Texture* atlas;
+	HitBox* rail;
 	Transform t = Transform(0.0f, 0.35f, 0.5f, 0.5f, 0.0f);
 	SubTexture s = SubTexture();
-	HitBox rail;
+	CollisionGrid grid;
 
 	void Update(float dt) {
 		player.Update(dt);
@@ -19,6 +20,8 @@ struct SceneTestingData {
 		rend->Start();
 		RenderLevelTiles(rend);
 		player.Render(rend);
+		rail->Render(rend);
+		grid.DEBUG_RENDER(rend);
 		rend->End();
 	}
 };
@@ -56,7 +59,6 @@ void RenderLevelTiles(Renderer* rend) {
 	sd.s.SetValues(sd.atlas, 2 * 64, 128, 64, 64);
 	rend->DrawQuad(sd.atlas, sd.s, sd.t.GetPosition(), sd.t.GetScale());
 
-	//sd.rail.Render(rend);
 }
 
 void Load_Testing(){
@@ -65,9 +67,11 @@ void Load_Testing(){
 
 	// Populate scene data
 	//sd.player = std::move(Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f));
-	new (&sd.player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f); // <-- more goated than std::move
 	new (&sd.camera) Camera(Window::width, Window::height);
-	new (&sd.rail) HitBox(2.0, 25.0f * 0.5f, -0.125f, 0.125f, HitBoxType::GrindRail); // TODO: this calculation doesn't feel right...
+	new (&sd.grid) CollisionGrid(0.5f);
+	new (&sd.player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, &sd.grid); // <-- more goated than std::move
+	sd.rail = sd.grid.Register(HitBox(2.0, 25.0f * 0.5f, -0.125f, 0.125f, HitBoxType::GrindRail)); // TODO: this calculation doesn't feel right...
+	sd.grid.ConstructGrid();
 }
 
 void Start_Testing() {
@@ -101,14 +105,18 @@ void Update_Testing(float dt) {
 		sd.camera.transform.Scale(4.0f * dt, 4.0f * dt);
 	}
 
-	// Brute force collision check for now
-	sd.player.boardHitBox.CheckCollision(sd.rail);
+	// TODO: this should get moved to baby if possible -- shouldn't be scene's responsibility
+	sd.grid.CheckCollision(sd.player.bodyHitBox);
+	sd.grid.CheckCollision(sd.player.boardHitBox);
+	
 	sd.Update(dt);
+	
 	// This is so far from what I was trying to do haha
 	float playerX = sd.player.transform.GetPosition().x;
 	float rightBound = sd.camera.right * sd.camera.transform.GetScale().x - 0.8f;
 	float leftBound = sd.camera.left * sd.camera.transform.GetScale().x + 0.8f;
 	if(playerX >= rightBound || playerX <= leftBound) sd.camera.transform.SetPositionX(sd.player.transform.GetPosition().x);
+	
 	sd.Render(&SceneManager::renderer);
 
 }

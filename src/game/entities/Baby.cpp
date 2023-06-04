@@ -20,7 +20,7 @@
 #define BALANCE_TILT_FACTOR 0.8f
 #define BALANCE_TILT_SPEED 4.0f
 #define BALANCE_TILT_SENSITIVITY 0.9f
-#define BALANCE_NOISE 4.0f
+#define BALANCE_NOISE 3.5f
 
 #define ANIM_SPEED 7.0f
 
@@ -42,14 +42,19 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	}
 }
 
-Baby::Baby(float xPos, float yPos, float xScale, float yScale, float rotation, const std::string name)
-	: Entity(xPos, yPos, xScale, yScale, rotation, name), physicsController(&transform), state(BabyState::Ground),
-	direction(1.0f), bodyHitBox(0.0f, 0.0f, 0.45f, 0.8f, this, OnBodyCollision), boardHitBox(0.0f, 0.4f, 0.6f, 0.2f, this, OnBoardCollision),
-	nextJumpVel(MIN_JUMP_VEL){
+Baby::Baby(float xPos, float yPos, float xScale, float yScale, float rotation, CollisionGrid* grid, const std::string name)
+	: Entity(xPos, yPos, xScale, yScale, rotation, name), physicsController(&transform, grid), state(BabyState::Ground),
+	direction(1.0f), nextJumpVel(MIN_JUMP_VEL){
+
 	texture = ResourceManager::GetTexture("baby");
 	meterSubTex = SubTexture(texture, 1 * 128, 4 * 128 + 40, 128, 64);
 	indicatorSubTex = SubTexture(texture, 1 * 128, 4 * 128 + 40+64, 128, 64);
 	InitializeAnimations();
+	// Initialize hitboxes
+	bodyHitBox = grid->Register(HitBox(0.0f, 0.0f, 0.45f, 0.8f, this, OnBodyCollision));
+	boardHitBox = grid->Register(HitBox(0.0f, 0.4f, 0.6f, 0.2f, this, OnBoardCollision));
+	physicsController.hitboxes.push_back(bodyHitBox->id);
+	physicsController.hitboxes.push_back(boardHitBox->id);
 }
 
 void Baby::InitializeAnimations() {
@@ -110,13 +115,13 @@ void Baby::InitializeAnimations() {
 void Baby::Render(Renderer* renderer) {
 	if (generateSparks) {
 		float intensity = physicsController.XSpeed() / GRIND_MAX_SPEED;
-		glm::vec2 pos = glm::vec2(-(transform.scale.x / 4.0f), transform.scale.y / 2.0f - boardHitBox.localTransform.scale.y / 2.0f);
+		glm::vec2 pos = glm::vec2(-(transform.scale.x / 4.0f), transform.scale.y / 2.0f - boardHitBox->localTransform.scale.y / 2.0f);
 		sparks.GenerateSparks(transform.position + pos, direction, renderer, intensity);
 	}
 	renderer->DrawQuad(texture, subTexture, transform.position, transform.scale);
 	if(balancing) RenderBalanceMeter(renderer);
-	//bodyHitBox.Render(renderer);
-	//boardHitBox.Render(renderer);
+	bodyHitBox->Render(renderer);
+	boardHitBox->Render(renderer);
 }
 
 void Baby::Update(float dt) {
@@ -186,16 +191,16 @@ void Baby::GroundedUpdate(float dt) {
 	if (InputCrouch()) {
 		animator.PlayOnce("crouch", true, true);
 		// Adjust hitbox to crouch
-		bodyHitBox.localTransform.SetScaleY(0.7f);
-		bodyHitBox.localTransform.SetPositionY(0.05f);
+		bodyHitBox->localTransform.SetScaleY(0.7f);
+		bodyHitBox->localTransform.SetPositionY(0.05f);
 		// Charge jump
 		nextJumpVel = std::min(nextJumpVel + JUMP_CHARGE_RATE*dt, JUMP_VEL);
 	}
 	// Jump
 	else if (InputJump()) {
 		// Restore hitbox
-		bodyHitBox.localTransform.SetScaleY(0.8f);
-		bodyHitBox.localTransform.SetPositionY(0.0f);
+		bodyHitBox->localTransform.SetScaleY(0.8f);
+		bodyHitBox->localTransform.SetPositionY(0.0f);
 		// Add velocity and restore velocity variable to its minimum
 		physicsController.velocity.y = -nextJumpVel;
 		nextJumpVel = MIN_JUMP_VEL;
@@ -264,15 +269,15 @@ void Baby::GrindUpdate(float dt) {
 	// Crouch
 	else if (InputCrouch()) {
 		animator.PlayOnce("crouch", true, true);
-		bodyHitBox.localTransform.SetScaleY(0.7f);
-		bodyHitBox.localTransform.SetPositionY(0.05f);
+		bodyHitBox->localTransform.SetScaleY(0.7f);
+		bodyHitBox->localTransform.SetPositionY(0.05f);
 		// Charge jump
 		nextJumpVel = std::min(nextJumpVel + JUMP_CHARGE_RATE * dt, JUMP_VEL);
 	}
 	// Jump
 	else if (InputJump()) { // <-- think about if grind should still have charge/hold jumps
-		bodyHitBox.localTransform.SetScaleY(0.8f);
-		bodyHitBox.localTransform.SetPositionY(0.0f);
+		bodyHitBox->localTransform.SetScaleY(0.8f);
+		bodyHitBox->localTransform.SetPositionY(0.0f);
 		physicsController.velocity.y = -nextJumpVel;
 		nextJumpVel = MIN_JUMP_VEL;
 		physicsController.acceleration.x = 0;

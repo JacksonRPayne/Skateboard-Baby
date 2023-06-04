@@ -33,8 +33,9 @@ struct HitBox
 	// --Variables--
 	bool active = true;
 	int id = -1;
-	// So occupied cells doesn't have to be recalculated for each collision check
-	int cells[4] = { -1, -1, -1, -1 };
+	// Of all occupied grid cells, it stores top left and bottom right (u can figure out rest from that)
+	int topLeftCell = -1;
+	int bottomRightCell = -1;
 	// Dynamic hitboxes change their global positions/scale, non-dynamic ones are set once and never changed
 	bool dynamic;
 	// Stores the position in relation to the parent entity

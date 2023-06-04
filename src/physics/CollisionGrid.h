@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <limits>
+#include <algorithm>
 #include "HitBox.h"
 
 
@@ -30,34 +31,49 @@
 // ---- This part doesn't make as much sense as I thought it would unless the CheckCollision func somehow references
 // ---- a function pointer in "other" to determine bounds. <-- this is what should have funcptr not checkcollision
 
-// Usage:
-// Register each desired hitbox, then create the grid
+// ^wow thats alotta notes...
+
+
+// TODO: Seems to be working for now, but still need to handle
+// (1) Out of bounds cases where hitbox leaves the grid
+// -- Almost fixed: but issue is if one part of hitbox is out of bounds,
+// -- its kicked out of the whole grid, which is bad
+// (2) Vector resize :')
+// (3) Maybe clean things up a bit? organize?
+
+
+// Usage: Register each desired hitbox, then construct the grid
 class CollisionGrid
 {
 public:
+	CollisionGrid(): CELL_SIZE(-1.0f){}
 	CollisionGrid(float cellSize);
 
 	// Registers new hitbox to grid
 	HitBox* Register(const HitBox &hitBox);
-	void CreateGrid();
+	// Call once all hitboxes are registered
+	void ConstructGrid();
 	// Returns the cell index of the point given
 	int GetCellOfPoint(glm::vec2 point);
 	// Returns a length 4 int
+	// NOTE: I fucked up... a hitbox can be in more than 4 cells duh.....
 	void GetCellsOfBox(const HitBox& hitbox, int* returnArr);
 	// For moving/scaling hitboxes
 	void UpdateGridPosition(int hitboxId);
-	
+	// Queries grid to see if hitbox is colliding with anything
 	void CheckCollision(HitBox* hitbox);
 
-	float leftBound;
-	float rightBound;
-	float topBound;
-	float bottomBound;
+
+	void DEBUG_RENDER(Renderer* renderer);
+
+	float leftBound = 0;
+	float rightBound = 0;
+	float topBound = 0;
+	float bottomBound = 0;
 	int cellCount=0;
 	// How many horizontal vs vertical cells are there
 	int cellsXCount = 0;
 	int cellsYCount = 0;
-	HitBox gridBounds;
 
 	// Indexes into hitboxes
 	std::vector<int>* cells;
@@ -66,6 +82,10 @@ private:
 	// Expands grid if new hitbox is outside of range
 	void ExpandBoundaries(const HitBox &hitbox);
 	void InsertToGrid(const HitBox& hitbox);
+
+	// Returns the x/y of the cell index IN THE GRID (not world space)
+	int CellX(int cell);
+	int CellY(int cell);
 
 	// Stores all hitboxes in scene
 	std::vector<HitBox> hitboxes;

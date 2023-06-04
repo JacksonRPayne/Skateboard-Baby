@@ -5,7 +5,8 @@ HitBox::HitBox(): localTransform(), parentEntity(nullptr), collisionCallback(nul
 HitBox::HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent, 
 	void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag, bool dynamic)
 	: localTransform(xPos, yPos, xScale, yScale, 0.0f), parentEntity(parent), collisionCallback(callback),
-	tag(tag), dynamic(dynamic){}
+	tag(tag), dynamic(dynamic) {
+}
 
 HitBox::HitBox(float lefBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag, bool dynamic)
 	: localTransform((rightBound + lefBound) / 2.0f, (upperBound + lowerBound) / 2.0f, (rightBound - lefBound), (lowerBound - upperBound), 0.0f),
@@ -13,6 +14,7 @@ HitBox::HitBox(float lefBound, float rightBound, float upperBound, float lowerBo
 }
 
 bool HitBox::CheckCollision(const HitBox& other) {
+	if (this == &other) return false;
 	if (!active || !other.active) return false;
 	glm::vec2 otherPos = other.GetGlobalPosition();
 	glm::vec2 pos = GetGlobalPosition();

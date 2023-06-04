@@ -1,12 +1,15 @@
 #pragma once
+#include <vector>
 #include <glm/glm.hpp>
 #include "graphics/Transform.h"
+#include "physics/CollisionGrid.h"
+
 
 class PhysicsController
 {
 public:
-	PhysicsController() : transform(nullptr), velocity(0.0f), acceleration(0.0f) {}
-	PhysicsController(Transform* transform);
+	PhysicsController() : transform(nullptr), velocity(0.0f), acceleration(0.0f), grid(nullptr) {}
+	PhysicsController(Transform* transform, CollisionGrid* collGrid);
 	
 	void Update(float dt);
 
@@ -22,7 +25,9 @@ public:
 
 	glm::vec2 velocity;
 	glm::vec2 acceleration;
-
+	// Dynamic hitboxes to be updated in grid
+	std::vector<int> hitboxes;
+	CollisionGrid* grid;
 private:
 	Transform* transform;
 
