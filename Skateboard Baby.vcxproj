@@ -151,7 +151,6 @@
     <ClCompile Include="src\physics\PhysicsController.cpp" />
     <ClCompile Include="src\scene\Camera.cpp" />
     <ClCompile Include="src\scene\Entity.cpp" />
-    <ClCompile Include="src\scene\Scene.cpp" />
     <ClCompile Include="src\scene\SceneManager.cpp" />
     <ClCompile Include="src\system\InputManager.cpp" />
     <ClCompile Include="src\system\Log.cpp" />

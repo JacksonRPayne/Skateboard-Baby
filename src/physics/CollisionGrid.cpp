@@ -1,7 +1,7 @@
 #include "CollisionGrid.h"
 
 CollisionGrid::CollisionGrid(float cellSize) 
-	: CELL_SIZE(cellSize), hitboxes(), dynamicHitboxes(){
+	: CELL_SIZE(cellSize), hitboxes(){
 
 	cells = nullptr;
 	hitboxes.reserve(10);
@@ -18,12 +18,6 @@ HitBox* CollisionGrid::Register(const HitBox &hitBox) {
 	// Index to retrieve this hitbox
 	int hitBoxId = hitboxes.size() - 1;
 	hitboxes[hitBoxId].id = hitBoxId;
-	
-
-	// So basically if this hitbox is dynamic, it will add it to a list of the dynamic hitboxes
-	// It knows its dynamic by checking the "dynamic" member of the hitbox
-	// If confused email jacksonpayne909@gmail.com with questions
-	if (hitBox.dynamic) dynamicHitboxes.push_back(hitBoxId);
 
 	// TODO: uh oh.. vector resize = stale pointer, fuck STL
 	return &hitboxes[hitBoxId];
@@ -66,9 +60,8 @@ void CollisionGrid::ConstructGrid() {
 }
 
 int CollisionGrid::GetCellOfPoint(glm::vec2 point) {
-	//if (!gridBounds.Contains(point)) return -1;
+	if (point.x < leftBound || point.x > rightBound || point.y < topBound || point.y > bottomBound) return -1;
 	int cell = (int)std::floor((point.x - leftBound) / CELL_SIZE) + (int)std::floor((point.y - topBound) / CELL_SIZE) * cellsXCount;
-	if (cell <0 || cell > cellCount - 1) return -1;
 	return cell;
 }
 
@@ -80,131 +73,91 @@ int CollisionGrid::CellY(int cell) {
 	return (cell / cellsXCount);
 }
 
-void CollisionGrid::InsertToGrid(const HitBox& hitbox) {
-	//int cellIdx[4];
-	//GetCellsOfBox(hitbox, cellIdx);
-	//for (int i = 0; i < 4; i++) {
-	//	if (cellIdx[i] == -1)continue;
-	//	cells[cellIdx[i]].push_back(hitbox.id);
-	//}
-	//// Sets hitbox cells 
-	//memcpy(hitboxes[hitbox.id].cells, cellIdx, 4 * sizeof(int));
 
-	int topLeftCell = GetCellOfPoint(hitbox.TopLeft());
-	int bottomRightCell = GetCellOfPoint(hitbox.BottomRight());
-	// Out of bounds
-	if (topLeftCell == -1 || bottomRightCell == -1) return;
+void CollisionGrid::GetCellsOfBox(int hitboxId, int topLeftCell, int bottomRightCell, std::vector<int>* returnCells) {
+	glm::vec2 topLeft = hitboxes[hitboxId].TopLeft();
+	glm::vec2 bottomRight = hitboxes[hitboxId].BottomRight();
 
-	int cellWidth = CellX(bottomRightCell) - CellX(topLeftCell);
-	int cellHeight = CellY(bottomRightCell) - CellY(topLeftCell);
+	if (topLeftCell == -1 && bottomRightCell == -1) return;
+
+	// Just top left out of bounds
+	if (topLeftCell == -1) {
+		// Clamps point to grid borders
+		glm::vec2 adjustedPoint(std::max(topLeft.x, leftBound), std::max(topLeft.y, topBound));
+		topLeftCell = GetCellOfPoint(adjustedPoint);
+	}
+	// Just bottom right out of bounds
+	if (bottomRightCell == -1) {
+		glm::vec2 adjustedPoint(std::min(bottomRight.x, rightBound - 0.001f), std::min(bottomRight.y, bottomBound - 0.001f));
+		bottomRightCell = GetCellOfPoint(adjustedPoint);
+	}
+
+	int cellWidth = std::max(CellX(bottomRightCell) - CellX(topLeftCell), 0);
+	int cellHeight = std::max(CellY(bottomRightCell) - CellY(topLeftCell), 0);
+
 
 	for (int y = 0; y <= cellHeight; y++) {
 		for (int x = 0; x <= cellWidth; x++) {
 			int currCell = (y * cellsXCount + x) + topLeftCell;
-			cells[currCell].push_back(hitbox.id);
+			if (currCell < 0 || currCell >= cellCount) continue;
+			returnCells->push_back(currCell);
 		}
 	}
 
 	// Set cell values for hitbox
-	hitboxes[hitbox.id].topLeftCell = topLeftCell;
-	hitboxes[hitbox.id].bottomRightCell = bottomRightCell;
+	hitboxes[hitboxId].topLeftCell = topLeftCell;
+	hitboxes[hitboxId].bottomRightCell = bottomRightCell;
 }
 
+void CollisionGrid::InsertToGrid(const HitBox& hitbox) {
 
-
-void CollisionGrid::GetCellsOfBox(const HitBox& hitbox, int* returnArr) {
-	glm::vec2 corners[4] = { hitbox.TopRight(),hitbox.TopRight(), hitbox.BottomLeft(),hitbox.BottomRight() };
-	returnArr[0] = -1;
-	returnArr[1] = -1;
-	returnArr[2] = -1;
-	returnArr[3] = -1;
-	// How many cells the hitbox has been inserted to already
-	int cellCount = 0;
-	int currCell = GetCellOfPoint(hitbox.TopLeft());
-	if (currCell != -1) {
-		returnArr[0] = currCell;
-		cellCount++;
-	}
-	int nextCell = -1;
-	for (int i = 0; i < 4; i++) {
-		// Loops through and checks each corner and puts hitbox in every cell it touches
-		nextCell = GetCellOfPoint(corners[i]);
-		if (nextCell != currCell && nextCell !=-1) {
-			returnArr[cellCount] = nextCell;
-			currCell = nextCell;
-			cellCount++;
-		}
+	std::vector<int> occupiedCells = std::vector<int>();
+	GetCellsOfBox(hitbox.id, GetCellOfPoint(hitbox.TopLeft()), GetCellOfPoint(hitbox.BottomRight()), &occupiedCells);
+	for (int i = 0; i < occupiedCells.size(); i++) {
+		cells[occupiedCells[i]].push_back(hitbox.id);
 	}
 }
+
 
 void CollisionGrid::CheckCollision(HitBox* hitbox) {
-	// For each potential cell the hitbox is in
-	//for (int i = 0; i < 4; i++) {
-	//	int cell = hitbox->cells[i];
-	//	if (cell == -1) continue;
-	//	// Check collision on each hitbox in that cell
-	//	for (int j = 0; j < cells[cell].size(); j++) {
-	//		//								 Looks so ugly
-	//		hitbox->CheckCollision(hitboxes[(cells[cell])[j]]);
-	//	}
-	//}
-	int topLeftCell = hitbox->topLeftCell;
-	int bottomRightCell = hitbox->bottomRightCell;
 
-	int cellWidth = CellX(bottomRightCell) - CellX(topLeftCell);
-	int cellHeight = CellY(bottomRightCell) - CellY(topLeftCell);
+	std::vector<int> occupiedCells = std::vector<int>();
+	GetCellsOfBox(hitbox->id, hitbox->topLeftCell, hitbox->bottomRightCell, &occupiedCells);
 	// Stores already checked hitbox ids
 	// Another way to do it could be to make a set of hbids and construct it in the nested loop
 	// then check collisions after. Set overhead might make it slower for this simple of a prob (small n)
 	std::vector<int> checkedHitboxes = std::vector<int>();
-
-	for (int y = 0; y <= cellHeight; y++) {
-		for (int x = 0; x <= cellWidth; x++) {
-			int currCell = (y * cellsXCount + x) + topLeftCell;
-			for (int i = 0; i < cells[currCell].size(); i++) { // some nasty nesting
-				int hbid = (cells[currCell])[i];
-				// Already checked coll on this hb
-				if (std::find(checkedHitboxes.begin(), checkedHitboxes.end(), hbid) != checkedHitboxes.end()) continue; 
-				hitbox->CheckCollision(hitboxes[hbid]);
-				checkedHitboxes.push_back(hbid);
-			}
+	for (int c = 0; c < occupiedCells.size(); c++) { // <-- c++ ;)
+		for (int i = 0; i < cells[occupiedCells[c]].size(); i++) {
+			int hbid = (cells[occupiedCells[c]])[i];
+			// Already checked coll on this hb
+			if (std::find(checkedHitboxes.begin(), checkedHitboxes.end(), hbid) != checkedHitboxes.end()) continue;
+			hitbox->CheckCollision(hitboxes[hbid]);
+			checkedHitboxes.push_back(hbid);
 		}
 	}
 }
 
 void CollisionGrid::UpdateGridPosition(int hitboxId) {
+	int newTl = GetCellOfPoint(hitboxes[hitboxId].TopLeft());
+	int newBr = GetCellOfPoint(hitboxes[hitboxId].BottomRight());
 
-	//int* oldCells = hitboxes[hitboxId].cells;
-	//int newCells[4];
-	//GetCellsOfBox(hitboxes[hitboxId], newCells);
-	//
-	//// NOTE: I think this is probably more efficient than checking to see if its changed for value
-	//for (int i = 0; i < 4; i++) {	
-	//	// Removes hitbox from all cells it was in
-	//	cells[oldCells[i]].erase(std::remove(cells[oldCells[i]].begin(), cells[oldCells[i]].end(), hitboxId));
-	//	// Adds hitbox to all cells its in now
-	//	cells[newCells[i]].push_back(hitboxId);
-	//}
+	int tl = hitboxes[hitboxId].topLeftCell;
+	int br = hitboxes[hitboxId].bottomRightCell;
 
-	int topLeftCell = GetCellOfPoint(hitboxes[hitboxId].TopLeft());
-	int bottomRightCell = GetCellOfPoint(hitboxes[hitboxId].BottomRight());
-	// Return if it still occupies the same 
-	if (topLeftCell == hitboxes[hitboxId].topLeftCell && bottomRightCell == hitboxes[hitboxId].bottomRightCell) return;
-	
-	topLeftCell = hitboxes[hitboxId].topLeftCell;
-	bottomRightCell = hitboxes[hitboxId].bottomRightCell;
+	// No change in grid pos
+	// NOTE: this doesn't cover one special case where top left and bottom right are out
+	// of bounds but the middle is still in the grid (bottom left is in the grid)
+	if (newTl == tl && newBr == br) return;
 
-	int cellWidth = CellX(bottomRightCell) - CellX(topLeftCell);
-	int cellHeight = CellY(bottomRightCell) - CellY(topLeftCell);
-	// Erases this hitbox from all cells it used to be in
-	for (int y = 0; y <= cellHeight; y++) {
-		for (int x = 0; x <= cellWidth; x++) {
-			int currCell = (y * cellsXCount + x) + topLeftCell;
-			cells[currCell].erase(std::remove(cells[currCell].begin(), cells[currCell].end(), hitboxId), cells[currCell].end());
-		}
+	std::vector<int> oldCells = std::vector<int>();
+	GetCellsOfBox(hitboxId, tl, br, &oldCells);
+	// Removes this hitbox from all old cells
+	for (int i = 0; i < oldCells.size(); i++) {
+		cells[oldCells[i]].erase(std::remove(cells[oldCells[i]].begin(), cells[oldCells[i]].end(), hitboxId), cells[oldCells[i]].end());
 	}
 
-	// Reinserts hitbox into correct grid positions
+	// Reinserts hitbox into correct cells
 	InsertToGrid(hitboxes[hitboxId]);
 
 }
@@ -245,10 +198,4 @@ void CollisionGrid::DEBUG_RENDER(Renderer* renderer) {
 		}
 		renderer->DrawQuad(color, pos, glm::vec2(CELL_SIZE));
 	}
-}
-
-
-
-void CollisionGrid::ExpandBoundaries(const HitBox& hitbox) {
-	// Do I actually want this functionality...?
 }

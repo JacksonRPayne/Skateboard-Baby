@@ -1,16 +1,18 @@
 #include "Hitbox.h"
 
+int HitBox::collisionChecks = 0;
+
 HitBox::HitBox(): localTransform(), parentEntity(nullptr), collisionCallback(nullptr), tag(HitBoxType::None), active(true){}
 
 HitBox::HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent, 
-	void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag, bool dynamic)
+	void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag)
 	: localTransform(xPos, yPos, xScale, yScale, 0.0f), parentEntity(parent), collisionCallback(callback),
-	tag(tag), dynamic(dynamic) {
+	tag(tag) {
 }
 
-HitBox::HitBox(float lefBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag, bool dynamic)
+HitBox::HitBox(float lefBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag)
 	: localTransform((rightBound + lefBound) / 2.0f, (upperBound + lowerBound) / 2.0f, (rightBound - lefBound), (lowerBound - upperBound), 0.0f),
-	parentEntity(nullptr), collisionCallback(nullptr), tag(tag), dynamic(dynamic){
+	parentEntity(nullptr), collisionCallback(nullptr), tag(tag){
 }
 
 bool HitBox::CheckCollision(const HitBox& other) {
@@ -31,6 +33,7 @@ bool HitBox::CheckCollision(const HitBox& other) {
 		if(collisionCallback) (*collisionCallback)(*this, other);
 	}
 
+	collisionChecks++;
 	return collision;
 }
 

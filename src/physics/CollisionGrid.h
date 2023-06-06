@@ -55,9 +55,6 @@ public:
 	void ConstructGrid();
 	// Returns the cell index of the point given
 	int GetCellOfPoint(glm::vec2 point);
-	// Returns a length 4 int
-	// NOTE: I fucked up... a hitbox can be in more than 4 cells duh.....
-	void GetCellsOfBox(const HitBox& hitbox, int* returnArr);
 	// For moving/scaling hitboxes
 	void UpdateGridPosition(int hitboxId);
 	// Queries grid to see if hitbox is colliding with anything
@@ -79,9 +76,10 @@ public:
 	std::vector<int>* cells;
 
 private:
-	// Expands grid if new hitbox is outside of range
-	void ExpandBoundaries(const HitBox &hitbox);
+	// Takes a registered hitbox and places it in the grid
 	void InsertToGrid(const HitBox& hitbox);
+	
+	void GetCellsOfBox(int hitboxId, int topLeftCell, int bottomRightCell, std::vector<int>* returnCells);
 
 	// Returns the x/y of the cell index IN THE GRID (not world space)
 	int CellX(int cell);
@@ -89,8 +87,6 @@ private:
 
 	// Stores all hitboxes in scene
 	std::vector<HitBox> hitboxes;
-	// Stores dynamic hitboxes: used to check if hitbox needs to be reassigned to diff grid cells
-	std::vector<int> dynamicHitboxes;
 
 	const float CELL_SIZE;
 

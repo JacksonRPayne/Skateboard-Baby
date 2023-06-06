@@ -20,7 +20,7 @@
 #define BALANCE_TILT_FACTOR 0.8f
 #define BALANCE_TILT_SPEED 4.0f
 #define BALANCE_TILT_SENSITIVITY 0.9f
-#define BALANCE_NOISE 3.5f
+#define BALANCE_NOISE 3.0f
 
 #define ANIM_SPEED 7.0f
 
@@ -30,6 +30,8 @@ Animation Baby::crouch;
 Animation Baby::grind;
 Animation Baby::jumpAscend;
 Animation Baby::jumpDescend;
+
+
 
 void OnBodyCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 
@@ -120,8 +122,8 @@ void Baby::Render(Renderer* renderer) {
 	}
 	renderer->DrawQuad(texture, subTexture, transform.position, transform.scale);
 	if(balancing) RenderBalanceMeter(renderer);
-	bodyHitBox->Render(renderer);
-	boardHitBox->Render(renderer);
+	//bodyHitBox->Render(renderer);
+	//boardHitBox->Render(renderer);
 }
 
 void Baby::Update(float dt) {

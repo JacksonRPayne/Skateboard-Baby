@@ -10,9 +10,6 @@
 // -- Change game from class to function
 // -- Change to ground hitbox
 // 
-// Collision Detection
-// -- Still no way to spatially partition world for collision detection
-// 
 // Level Editing Tools
 // -- Will be easier to add once collision is all set
 // -- At simplest: some functions to put rails and stuff in
@@ -27,6 +24,7 @@
 // 
 // Camera
 // -- Actual camera controller
+// -- Paralax :D
 // 
 // Ramps
 // -- Create ramps and add ability to have custom intersection function with a funcptr
