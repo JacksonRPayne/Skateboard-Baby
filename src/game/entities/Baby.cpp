@@ -38,12 +38,12 @@ void OnBodyCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 }
 
 void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
-	if (otherHitBox.tag == HitBoxType::Ground) {
+	if (otherHitBox.tag == HitBoxType::Ground) { 
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
 		// if(baby->physicsController.velocity.y>0) return;
-		float yDiff = 0;
+		float yDiff = otherHitBox.TopBound() - thisHitBox.BottomBound();
 		// Move baby out of ground
-		baby->physicsController.Translate(0.0f, -yDiff);
+		baby->physicsController.Translate(0.0f, yDiff);
 		// Set ground state
 		baby->physicsController.velocity.y = 0;
 		baby->physicsController.acceleration.y = 0;

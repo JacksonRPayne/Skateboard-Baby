@@ -37,6 +37,7 @@ public:
 	
 	// ----State variables----
 	BabyState state;
+	bool grounded = false;
 	// For facing direction not moving direction
 	float direction;
 	Animator animator;
