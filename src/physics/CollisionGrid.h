@@ -46,8 +46,11 @@
 class CollisionGrid
 {
 public:
-	CollisionGrid(): CELL_SIZE(-1.0f){}
+	CollisionGrid(): CELL_SIZE(-1.0f), cells(nullptr){}
 	CollisionGrid(float cellSize);
+
+	// Not really singleton -- replaced every time new one is created
+	static CollisionGrid* currentGrid;
 
 	// Registers new hitbox to grid
 	HitBox* Register(const HitBox &hitBox);
@@ -60,6 +63,9 @@ public:
 	// Queries grid to see if hitbox is colliding with anything
 	void CheckCollision(HitBox* hitbox);
 
+	// Returns the x/y of the cell index IN THE GRID (not world space)
+	int CellX(int cell);
+	int CellY(int cell);
 
 	void DEBUG_RENDER(Renderer* renderer);
 
@@ -81,9 +87,7 @@ private:
 	
 	void GetCellsOfBox(int hitboxId, int topLeftCell, int bottomRightCell, std::vector<int>* returnCells);
 
-	// Returns the x/y of the cell index IN THE GRID (not world space)
-	int CellX(int cell);
-	int CellY(int cell);
+
 
 	// Stores all hitboxes in scene
 	std::vector<HitBox> hitboxes;

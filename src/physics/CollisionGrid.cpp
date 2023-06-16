@@ -1,10 +1,13 @@
 #include "CollisionGrid.h"
 
+CollisionGrid* CollisionGrid::currentGrid = nullptr;
+
 CollisionGrid::CollisionGrid(float cellSize) 
 	: CELL_SIZE(cellSize), hitboxes(){
 
 	cells = nullptr;
 	hitboxes.reserve(10);
+	currentGrid = this;
 }
 
 HitBox* CollisionGrid::Register(const HitBox &hitBox) {
@@ -19,7 +22,7 @@ HitBox* CollisionGrid::Register(const HitBox &hitBox) {
 	int hitBoxId = hitboxes.size() - 1;
 	hitboxes[hitBoxId].id = hitBoxId;
 
-	// TODO: uh oh.. vector resize = stale pointer, fuck STL
+	// TODO: uh oh.. vector resize = stale pointer, fuck
 	return &hitboxes[hitBoxId];
 
 }
@@ -62,7 +65,9 @@ void CollisionGrid::ConstructGrid() {
 int CollisionGrid::GetCellOfPoint(glm::vec2 point) {
 	if (point.x < leftBound || point.x > rightBound || point.y < topBound || point.y > bottomBound) return -1;
 	int cell = (int)std::floor((point.x - leftBound) / CELL_SIZE) + (int)std::floor((point.y - topBound) / CELL_SIZE) * cellsXCount;
-	return cell;
+	// This is a little hacky but whatever... :O
+	// Used to clamp when point is on edge of grid
+	return std::min(cell, cellCount-1);
 }
 
 int CollisionGrid::CellX(int cell) {

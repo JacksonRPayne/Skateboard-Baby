@@ -38,9 +38,22 @@ void OnBodyCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 }
 
 void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
-	if (otherHitBox.tag == HitBoxType::GrindRail) {
+	if (otherHitBox.tag == HitBoxType::Ground) {
+		Baby* baby = (Baby*)thisHitBox.parentEntity;
+		// if(baby->physicsController.velocity.y>0) return;
+		float yDiff = 0;
+		// Move baby out of ground
+		baby->physicsController.Translate(0.0f, -yDiff);
+		// Set ground state
+		baby->physicsController.velocity.y = 0;
+		baby->physicsController.acceleration.y = 0;
+		baby->state = BabyState::Ground;
+		baby->balance = 0.0f;
+	}
+	else if (otherHitBox.tag == HitBoxType::GrindRail) {
 		((Baby*)thisHitBox.parentEntity)->touchingRail = true;
 		((Baby*)thisHitBox.parentEntity)->railY = otherHitBox.BottomBound();
+
 	}
 }
 
@@ -122,11 +135,15 @@ void Baby::Render(Renderer* renderer) {
 	}
 	renderer->DrawQuad(texture, subTexture, transform.position, transform.scale);
 	if(balancing) RenderBalanceMeter(renderer);
-	//bodyHitBox->Render(renderer);
-	//boardHitBox->Render(renderer);
+	bodyHitBox->Render(renderer);
+	boardHitBox->Render(renderer);
 }
 
 void Baby::Update(float dt) {
+	// Collision checks (duh)
+	CollisionGrid::currentGrid->CheckCollision(bodyHitBox);
+	CollisionGrid::currentGrid->CheckCollision(boardHitBox);
+
 
 	switch (state)
 	{
@@ -148,7 +165,7 @@ void Baby::Update(float dt) {
 	physicsController.Update(dt);
 	animator.Update(dt);
 	subTexture = animator.GetCurrentFrame().subTexture;
-	// Assumes collision checks are done before update
+	// Assumes collision checks are done before update (duh theyre right up there)
 	touchingRail = false;
 }
 
@@ -242,13 +259,13 @@ void Baby::AirUpdate(float dt) {
 		}
 	}
 	// On the "ground"
-	else {
-		transform.SetPositionY(0);
-		physicsController.velocity.y = 0;
-		physicsController.acceleration.y = 0;
-		state = BabyState::Ground;
-		balance = 0.0f;
-	}
+	//else {
+	//	transform.SetPositionY(0);
+	//	physicsController.velocity.y = 0;
+	//	physicsController.acceleration.y = 0;
+	//	state = BabyState::Ground;
+	//	balance = 0.0f;
+	//}
 }
 
 void Baby::GrindUpdate(float dt) {

@@ -3,12 +3,13 @@
 void RenderLevelTiles(Renderer* rend);
 
 struct SceneTestingData {
-	SceneTestingData() : atlas(nullptr), rail(nullptr) {};
+	SceneTestingData() : atlas(nullptr), rail(nullptr), ground(nullptr) {};
 	
 	Baby player;
 	Camera camera;
 	Texture* atlas;
 	HitBox* rail;
+	HitBox* ground;
 	Transform t = Transform(0.0f, 0.35f, 0.5f, 0.5f, 0.0f);
 	SubTexture s = SubTexture();
 	CollisionGrid grid;
@@ -20,8 +21,9 @@ struct SceneTestingData {
 		rend->Start();
 		RenderLevelTiles(rend);
 		player.Render(rend);
-		//rail->Render(rend);
-		//grid.DEBUG_RENDER(rend);
+		rail->Render(rend);
+		ground->Render(rend);
+		// grid.DEBUG_RENDER(rend);
 		rend->End();
 	}
 };
@@ -31,7 +33,7 @@ SceneTestingData* sd = nullptr;
 
 
 void RenderLevelTiles(Renderer* rend) {
-	// This whole section (apart from player render) is still slow btw 
+	// Draw Ground
 	sd->t.SetPosition(0.0f, 0.35f);
 	sd->s.SetValues(sd->atlas, 0, 0, 64, 64);
 	rend->DrawQuad(sd->atlas, sd->s, sd->t.GetPosition(), sd->t.GetScale());
@@ -46,6 +48,7 @@ void RenderLevelTiles(Renderer* rend) {
 	sd->s.SetValues(sd->atlas, 128, 0, 64, 64);
 	rend->DrawQuad(sd->atlas, sd->s, sd->t.GetPosition(), sd->t.GetScale());
 
+	// Draw Rail
 	sd->t.SetPosition(2.0, 0.25);
 	sd->s.SetValues(sd->atlas, 0, 128, 64, 64);
 	rend->DrawQuad(sd->atlas, sd->s, sd->t.GetPosition(), sd->t.GetScale());
@@ -67,12 +70,13 @@ void Load_Testing(){
 	sd->atlas = ResourceManager::LoadTexture("res/textures/TextureAtlas.png", "atlas");
 
 	// Populate scene data
-	//sd->player = std::move(Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f));
 	new (&sd->camera) Camera(Window::width, Window::height);
 	new (&sd->grid) CollisionGrid(0.5f);
 	new (&sd->player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, &sd->grid); // <-- more goated than std::move
-	sd->rail = sd->grid.Register(HitBox(2.0, 25.0f * 0.5f, -0.125f, 0.125f, HitBoxType::GrindRail)); // TODO: this calculation doesn't feel right...
+	sd->rail = sd->grid.Register(HitBox(2.0, 2.0 + 21.0f * 0.5f, -0.125f, 0.125f, HitBoxType::GrindRail));
+	sd->ground = sd->grid.Register(HitBox(-0.25f, 51.0f*0.5f + 0.75f, 0.5f, 1.0f, HitBoxType::Ground));
 	sd->grid.ConstructGrid();
+
 }
 
 void Start_Testing() {
@@ -105,10 +109,6 @@ void Update_Testing(float dt) {
 	if (InputManager::GetKey(GLFW_KEY_RIGHT_CONTROL)) {
 		sd->camera.transform.Scale(4.0f * dt, 4.0f * dt);
 	}
-
-	// TODO: this should get moved to baby if possible -- shouldn't be scene's responsibility
-	sd->grid.CheckCollision(sd->player.bodyHitBox);
-	sd->grid.CheckCollision(sd->player.boardHitBox);
 	
 	sd->Update(dt);
 	
@@ -117,10 +117,10 @@ void Update_Testing(float dt) {
 	float rightBound = sd->camera.right * sd->camera.transform.GetScale().x - 0.8f;
 	float leftBound = sd->camera.left * sd->camera.transform.GetScale().x + 0.8f;
 	if(playerX >= rightBound || playerX <= leftBound) sd->camera.transform.SetPositionX(sd->player.transform.GetPosition().x);
-	
 
 	sd->Render(&SceneManager::renderer);
-
+	//glm::vec2 hi = InputManager::GetWorldMousePos(Window::width, Window::height, sd->camera.right, sd->camera.transform);
+	//std::cout << hi.x << ", " << hi.y << '\n';
 	//std::cout << HitBox::collisionChecks << '\n';
 	HitBox::collisionChecks = 0;
 

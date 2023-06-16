@@ -43,6 +43,7 @@ public:
 	// Rail stuff
 	bool touchingRail = false;
 	float railY = -1.0f;
+	float balance = 0.0f; // -1/1 == fall
 	// For jump charging
 	float nextJumpVel;
 
@@ -60,7 +61,6 @@ private:
 	SubTexture indicatorSubTex; // The little baby face
 	bool balancing = false;
 	glm::vec2 indicatorPos = glm::vec2(0.0f);
-	float balance = 0.0f; // -1/1 == fall
 
 	// Abstracted input for support of multiple controllers
 	bool InputCrouch();

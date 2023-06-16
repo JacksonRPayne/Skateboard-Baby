@@ -10,8 +10,8 @@ HitBox::HitBox(float xPos, float yPos, float xScale, float yScale, Entity* paren
 	tag(tag) {
 }
 
-HitBox::HitBox(float lefBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag)
-	: localTransform((rightBound + lefBound) / 2.0f, (upperBound + lowerBound) / 2.0f, (rightBound - lefBound), (lowerBound - upperBound), 0.0f),
+HitBox::HitBox(float leftBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag)
+	: localTransform((rightBound - leftBound) / 2.0f + leftBound, (lowerBound - upperBound) / 2.0f + upperBound, (rightBound - leftBound), (lowerBound - upperBound), 0.0f),
 	parentEntity(nullptr), collisionCallback(nullptr), tag(tag){
 }
 

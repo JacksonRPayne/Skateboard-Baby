@@ -5,7 +5,6 @@
 // 
 // Housekeeping
 // -- Get rid of warnings
-// -- Heap allocate scene data
 // -- clean & dry
 // -- Change game from class to function
 // -- Change to ground hitbox

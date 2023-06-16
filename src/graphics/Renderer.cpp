@@ -95,22 +95,6 @@ void Renderer::Initialize() {
 
 }
 
-// https://jorenjoestar.github.io/post/pixel_art_filtering/
-float Renderer::CalculateTexelsPerPixel() {
-	float texPerPix = 1.0f;
-
-	const float screenAspect = (float)camera->windowWidth / (float)camera->windowHeight;
-
-	if (screenAspect > camera->aspectRatio) {
-		texPerPix = camera->top * camera->transform.GetScale().y / camera->windowHeight;
-	}
-	else {
-		texPerPix = camera->right * camera->transform.GetScale().x / camera->windowWidth;
-	}
-
-	return texPerPix / camera->transform.GetScale().y; // Divided by cam zoom
-
-}
 
 void Renderer::Start() {
 	//GLClearError();

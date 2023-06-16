@@ -45,7 +45,7 @@ public:
 	void DrawQuad(Texture* texture, const SubTexture &subTexture, const glm::mat4& modelMatrix);
 	// Draws a line for debugging ONLY. Not written batched, so performance is slow but it's only for debugging
 	// NEVER under ANY CIRCUMSTANCES call this in a release version or for non debugging purposes
-	void DrawLine(glm::vec2 startPos, glm::vec2 endPos, float width = 2.0f,  glm::vec4 color = {0.0f, 1.0f, 0.0f, 1.0f});
+	void DrawLine(glm::vec2 startPos, glm::vec2 endPos, float width = 3.0f,  glm::vec4 color = {0.0f, 1.0f, 0.0f, 1.0f});
 	// Ends the rendering for the frame (maybe flushes)
 	void End();
 
