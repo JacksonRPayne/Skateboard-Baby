@@ -9,17 +9,23 @@ void CameraController::SetFollowTarget(HitBox* target, float leftBound, float ri
 	followBounds.parentTransform = &(camera->transform);
 }
 void CameraController::Update(float dt) {
+	// The movement of the camera for this frame
+	glm::vec2 camMovement(0.0f);
+
 	// Target is outside of bounds -- move camera
 	if (!followTarget->CheckCollision(followBounds)) {
 		float xDiff = followTarget->GetGlobalPosition().x - followBounds.GetGlobalPosition().x;
 		float yDiff = followTarget->GetGlobalPosition().y - followBounds.GetGlobalPosition().y;
+		
+		// Adjusts x based on right or left bounds 
+		if (xDiff > 0) camMovement.x = followTarget->LeftBound() - followBounds.RightBound();
+		else camMovement.x = followTarget->RightBound() - followBounds.LeftBound();
+		// Adjusts y based on top or bottom bounds
+		if (yDiff > 0) camMovement.y = followTarget->TopBound() - followBounds.BottomBound();
+		else camMovement.y = followTarget->BottomBound() - followBounds.TopBound();
 
-		if (std::abs(xDiff) > std::abs(yDiff)) {
-			camera->transform.Translate(xDiff, 0.0f);
-		}
-		else {
-			camera->transform.Translate(0.0f, yDiff);
-		}
 	}
+	camera->transform.Translate(camMovement);
 	// TODO: do parallax
+	// Apply (translate) camMovement * paralaxAmount to each transform
 }
