@@ -17,7 +17,7 @@ struct HitBox
 	HitBox();
 	HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent,
 		void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox),  HitBoxType tag=HitBoxType::None);
-	HitBox(float lefBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag = HitBoxType::None);
+	HitBox(float leftBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag = HitBoxType::None);
 
 	// Checks collision with another hitbox and calls parent entity callback
 	// TODO: idea: give ability to pass custom collision detection function as fptr. Would be good for things like ramps
@@ -38,7 +38,9 @@ struct HitBox
 	int bottomRightCell = -1;
 	// Stores the position in relation to the parent entity
 	Transform localTransform;
-	Entity* parentEntity;
+	// Either or both could be null, parentTransform is for more lightweight use
+	Entity* parentEntity; 
+	Transform* parentTransform;
 	HitBoxType tag;
 	// Calls function on a collision
 	void(*collisionCallback)(const HitBox& thisHitBox, const HitBox& otherHitBox);

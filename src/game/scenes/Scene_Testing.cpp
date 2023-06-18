@@ -7,6 +7,7 @@ struct SceneTestingData {
 	
 	Baby player;
 	Camera camera;
+	CameraController camController;
 	Texture* atlas;
 	HitBox* rail;
 	HitBox* ground;
@@ -16,14 +17,16 @@ struct SceneTestingData {
 
 	void Update(float dt) {
 		player.Update(dt);
+		camController.Update(dt);
 	}
 	void Render(Renderer* rend) {
 		rend->Start();
 		RenderLevelTiles(rend);
 		player.Render(rend);
-		rail->Render(rend);
-		ground->Render(rend);
+		//rail->Render(rend);
+		//ground->Render(rend);
 		// grid.DEBUG_RENDER(rend);
+		camController.followBounds.Render(rend);
 		rend->End();
 	}
 };
@@ -73,10 +76,11 @@ void Load_Testing(){
 	new (&sd->camera) Camera(Window::width, Window::height);
 	new (&sd->grid) CollisionGrid(0.5f);
 	new (&sd->player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, &sd->grid); // <-- more goated than std::move
+	new (&sd->camController) CameraController(&sd->camera);
+
 	sd->rail = sd->grid.Register(HitBox(2.0, 2.0 + 21.0f * 0.5f, -0.125f, 0.125f, HitBoxType::GrindRail));
 	sd->ground = sd->grid.Register(HitBox(-0.25f, 51.0f*0.5f + 0.75f, 0.5f, 1.0f, HitBoxType::Ground));
 	sd->grid.ConstructGrid();
-
 }
 
 void Start_Testing() {
@@ -86,6 +90,7 @@ void Start_Testing() {
 
 	sd->camera.transform.ScaleFactor(2.0f, 2.0f);
 	sd->camera.transform.Translate(1.5f, -1.4f);
+	sd->camController.SetFollowTarget(sd->player.bodyHitBox, -0.25f, 0.25f, -0.25f, 1.0f);
 }
 
 void Update_Testing(float dt) {
@@ -113,10 +118,10 @@ void Update_Testing(float dt) {
 	sd->Update(dt);
 	
 	// This is so far from what I was trying to do haha
-	float playerX = sd->player.transform.GetPosition().x;
-	float rightBound = sd->camera.right * sd->camera.transform.GetScale().x - 0.8f;
-	float leftBound = sd->camera.left * sd->camera.transform.GetScale().x + 0.8f;
-	if(playerX >= rightBound || playerX <= leftBound) sd->camera.transform.SetPositionX(sd->player.transform.GetPosition().x);
+	//float playerX = sd->player.transform.GetPosition().x;
+	//float rightBound = sd->camera.right * sd->camera.transform.GetScale().x - 0.8f;
+	//float leftBound = sd->camera.left * sd->camera.transform.GetScale().x + 0.8f;
+	//if(playerX >= rightBound || playerX <= leftBound) sd->camera.transform.SetPositionX(sd->player.transform.GetPosition().x);
 
 	sd->Render(&SceneManager::renderer);
 	//glm::vec2 hi = InputManager::GetWorldMousePos(Window::width, Window::height, sd->camera.right, sd->camera.transform);

@@ -5,7 +5,7 @@
 #include "graphics/Transform.h"
 #include "scene/SceneManager.h"
 #include "physics/CollisionGrid.h"
-
+#include "game/CameraController.h"
 
 void Load_Testing();
 void Start_Testing();

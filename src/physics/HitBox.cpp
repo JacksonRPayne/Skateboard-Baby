@@ -2,17 +2,19 @@
 
 int HitBox::collisionChecks = 0;
 
-HitBox::HitBox(): localTransform(), parentEntity(nullptr), collisionCallback(nullptr), tag(HitBoxType::None), active(true){}
+HitBox::HitBox()
+: localTransform(), parentEntity(nullptr), parentTransform(nullptr), 
+	collisionCallback(nullptr), tag(HitBoxType::None), active(true){}
 
-HitBox::HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent, 
+HitBox::HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent,
 	void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag)
 	: localTransform(xPos, yPos, xScale, yScale, 0.0f), parentEntity(parent), collisionCallback(callback),
-	tag(tag) {
+	tag(tag), parentTransform(nullptr) {
 }
 
 HitBox::HitBox(float leftBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag)
 	: localTransform((rightBound - leftBound) / 2.0f + leftBound, (lowerBound - upperBound) / 2.0f + upperBound, (rightBound - leftBound), (lowerBound - upperBound), 0.0f),
-	parentEntity(nullptr), collisionCallback(nullptr), tag(tag){
+	parentEntity(nullptr), parentTransform(nullptr), collisionCallback(nullptr), tag(tag){
 }
 
 bool HitBox::CheckCollision(const HitBox& other) {
@@ -46,7 +48,8 @@ bool HitBox::Contains(glm::vec2 point) {
 
 glm::vec2 HitBox::GetGlobalPosition() const{
 	// Option to have or not have parent entity
-	if(parentEntity) return parentEntity->transform.GetPosition() + localTransform.GetPosition();
+	if (parentEntity) return parentEntity->transform.GetPosition() + localTransform.GetPosition();
+	else if (parentTransform) return parentTransform->position + localTransform.position;
 	return localTransform.GetPosition();
 }
 

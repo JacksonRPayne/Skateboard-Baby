@@ -40,7 +40,6 @@ void OnBodyCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	if (otherHitBox.tag == HitBoxType::Ground) { 
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
-		// if(baby->physicsController.velocity.y>0) return;
 		float yDiff = otherHitBox.TopBound() - thisHitBox.BottomBound();
 		// Move baby out of ground
 		baby->physicsController.Translate(0.0f, yDiff);
@@ -258,14 +257,6 @@ void Baby::AirUpdate(float dt) {
 			animator.PlayOnce("jumpDescend", false, true);
 		}
 	}
-	// On the "ground"
-	//else {
-	//	transform.SetPositionY(0);
-	//	physicsController.velocity.y = 0;
-	//	physicsController.acceleration.y = 0;
-	//	state = BabyState::Ground;
-	//	balance = 0.0f;
-	//}
 }
 
 void Baby::GrindUpdate(float dt) {
@@ -379,36 +370,3 @@ bool Baby::InputGrind() {
 	return InputManager::GetKeyDown(GLFW_KEY_LEFT_SHIFT) || InputManager::GetGamepadButtonDown(GLFW_GAMEPAD_BUTTON_Y);
 }
 
-/*
-Baby::Baby(Baby&& other) noexcept {
-	this->transform = other.transform;
-	this->name = "Baby";
-	this->texture = other.texture;
-	this->physicsController = PhysicsController(&(this->transform));
-	this->state = other.state;
-	this->direction = other.direction;
-	this->bodyHitBox = other.bodyHitBox;
-	this->bodyHitBox.parentEntity = this;
-	this->boardHitBox = other.boardHitBox;
-	this->boardHitBox.parentEntity = this;
-	// This may break with multiple baby instances
-	this->animator = std::move(other.animator);
-}
-
-Baby& Baby::operator=(Baby&& other) noexcept {
-	if (this != &other) {
-		this->transform = other.transform;
-		this->name = "Baby";
-		this->texture = other.texture;
-		this->physicsController = PhysicsController(&(this->transform));
-		this->state = other.state;
-		this->direction = other.direction;
-		this->bodyHitBox = other.bodyHitBox;
-		this->bodyHitBox.parentEntity = this;
-		this->boardHitBox = other.boardHitBox;
-		this->boardHitBox.parentEntity = this;
-		this->animator = std::move(other.animator);
-	}
-
-	return *this;
-}*/
