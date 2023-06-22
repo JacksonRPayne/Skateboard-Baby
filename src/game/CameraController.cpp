@@ -1,7 +1,9 @@
 #include "CameraController.h"
 
 CameraController::CameraController(Camera* camera)
-	: camera(camera), followTarget(nullptr), followBounds(), paralaxTargets(), minimumPos(){}
+	: camera(camera), followTarget(nullptr), followBounds(), paralaxTargets(){
+	minimumPos = camera->transform.position;
+}
 
 void CameraController::SetFollowTarget(Transform* target, float leftBound, float rightBound, float upperBound, float lowerBound) {
 	followTarget = target;
@@ -27,10 +29,14 @@ void CameraController::Update(float dt) {
 		camMovement.y = followTarget->TopBound() - followBounds.TopBound();
 	}
 
-	if ((camera->transform.position + camMovement).x < minimumPos.x || (camera->transform.position + camMovement).y < minimumPos.y) {
+	if ((camera->transform.position + camMovement).x < minimumPos.x || (camera->transform.position + camMovement).y > minimumPos.y) {
 		camMovement = minimumPos - camera->transform.position;
 	}
+
+	// Moves camera
 	camera->transform.Translate(camMovement);
-	// TODO: do parallax
-	// Apply (translate) camMovement * paralaxAmount to each transform
+	// Applies parallax
+	for (int i = 0; i < paralaxTargets.size(); i++) {
+		paralaxTargets[i].transform->Translate(camMovement * paralaxTargets[i].paralaxIntensity);
+	}
 }

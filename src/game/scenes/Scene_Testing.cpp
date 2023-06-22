@@ -13,6 +13,7 @@ struct SceneTestingData {
 	HitBox* ground;
 	Transform t = Transform(0.0f, 0.35f, 0.5f, 0.5f, 0.0f);
 	SubTexture s = SubTexture();
+	Transform TEST_BACKGROUND = Transform(1.0f, 0.0f, 5.0f, 5.0f, 0.0f);
 	CollisionGrid grid;
 
 	void Update(float dt) {
@@ -26,7 +27,7 @@ struct SceneTestingData {
 		//rail->Render(rend);
 		//ground->Render(rend);
 		// grid.DEBUG_RENDER(rend);
-		camController.followBounds.Render(rend);
+		//camController.followBounds.Render(rend);
 		rend->End();
 	}
 };
@@ -36,6 +37,9 @@ SceneTestingData* sd = nullptr;
 
 
 void RenderLevelTiles(Renderer* rend) {
+
+	rend->DrawQuad(ResourceManager::GetTexture("testgrid"), sd->TEST_BACKGROUND.position, sd->TEST_BACKGROUND.scale);
+
 	// Draw Ground
 	sd->t.SetPosition(0.0f, 0.35f);
 	sd->s.SetValues(sd->atlas, 0, 0, 64, 64);
@@ -67,6 +71,7 @@ void RenderLevelTiles(Renderer* rend) {
 }
 
 void Load_Testing(){
+	ResourceManager::LoadTexture("res/textures/Grid.png", "testgrid", false);
 	sd = new SceneTestingData();
 
 	ResourceManager::LoadTexture("res/textures/Baby.png", "baby");
@@ -74,6 +79,10 @@ void Load_Testing(){
 
 	// Populate scene data
 	new (&sd->camera) Camera(Window::width, Window::height);
+	// I do these up here so cam controller can set up automatically
+	sd->camera.transform.ScaleFactor(2.0f, 2.0f);
+	sd->camera.transform.Translate(1.5f, -1.4f);
+
 	new (&sd->grid) CollisionGrid(0.5f);
 	new (&sd->player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, &sd->grid); // <-- more goated than std::move
 	new (&sd->camController) CameraController(&sd->camera);
@@ -88,10 +97,8 @@ void Start_Testing() {
 	Window::screenCamera = &sd->camera;
 	SceneManager::renderer.camera = &sd->camera;
 
-	sd->camera.transform.ScaleFactor(2.0f, 2.0f);
-	sd->camera.transform.Translate(1.5f, -1.4f);
-	sd->camController.SetFollowTarget(&sd->player.transform, -1.5f, 0.2f, -1.5f, 2.0f);
-	sd->camController.minimumPos = glm::vec2(1.5f, -1.4f);
+	sd->camController.SetFollowTarget(&sd->player.transform, -1.5f, 0.2f, 0.5f, 2.0f);
+	sd->camController.AddParalaxTarget(&sd->TEST_BACKGROUND, 0.8f);
 }
 
 void Update_Testing(float dt) {

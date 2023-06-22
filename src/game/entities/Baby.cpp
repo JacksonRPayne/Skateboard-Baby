@@ -134,8 +134,8 @@ void Baby::Render(Renderer* renderer) {
 	}
 	renderer->DrawQuad(texture, subTexture, transform.position, transform.scale);
 	if(balancing) RenderBalanceMeter(renderer);
-	bodyHitBox->Render(renderer);
-	boardHitBox->Render(renderer);
+	//bodyHitBox->Render(renderer);
+	//boardHitBox->Render(renderer);
 }
 
 void Baby::Update(float dt) {

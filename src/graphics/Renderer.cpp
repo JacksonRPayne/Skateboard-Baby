@@ -190,6 +190,10 @@ void Renderer::DrawQuad(Texture* texture, const glm::mat4& modelMatrix)  {
 	DrawQuad(texture, defaultSubTexture, modelMatrix);
 }
 
+void Renderer::DrawQuad(Texture* texture, glm::vec2 position, glm::vec2 scale) {
+	DrawQuad(texture, defaultSubTexture, position, scale);
+}
+
 void Renderer::DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec2 position, glm::vec2 scale) {
 	// Another draw call needed
 	if (numIndices > MAX_INDICES - 6) {

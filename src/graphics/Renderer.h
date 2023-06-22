@@ -38,6 +38,7 @@ public:
 	void DrawQuad(glm::vec4 color, const glm::mat4& modelMatrix);
 	// Renders quad with texture
 	void DrawQuad(Texture* texture, const glm::mat4& modelMatrix);
+	void DrawQuad(Texture* texture, glm::vec2 position, glm::vec2 scale);
 	// Renders quad with subtexture
 	// This is the most preffered method to render a quad
 	void DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec2 position, glm::vec2 scale);
