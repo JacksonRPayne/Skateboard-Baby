@@ -14,7 +14,7 @@ struct ParalaxTarget {
 class CameraController
 {
 public:
-	CameraController():camera(nullptr), followTarget(nullptr){}
+	CameraController():camera(nullptr), followTarget(nullptr), minimumPos(){}
 	CameraController(Camera* camera);
 
 	void AddParalaxTarget(Transform* transform, float paralaxIntensity) { paralaxTargets.emplace_back(transform, paralaxIntensity); }
@@ -24,6 +24,8 @@ public:
 	Camera* camera;
 	// When target leaves bounds move camera
 	HitBox followBounds;
+	// Lowest x and y values permitted
+	glm::vec2 minimumPos;
 private:
 	// Camera will follow this (probably player)
 	Transform* followTarget;
