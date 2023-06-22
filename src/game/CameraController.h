@@ -6,7 +6,7 @@
 
 struct ParalaxTarget {
 	ParalaxTarget(): transform(nullptr), paralaxIntensity(0.0f){}
-	ParalaxTarget(Transform* t, float pi) :transform(t), paralaxIntensity(pi){}
+	ParalaxTarget(Transform* t, float intensity) :transform(t), paralaxIntensity(intensity){}
 	Transform* transform;
 	float paralaxIntensity;
 };
@@ -18,7 +18,7 @@ public:
 	CameraController(Camera* camera);
 
 	void AddParalaxTarget(Transform* transform, float paralaxIntensity) { paralaxTargets.emplace_back(transform, paralaxIntensity); }
-	void SetFollowTarget(HitBox* target, float leftBound, float rightBound, float upperBound, float lowerBound);
+	void SetFollowTarget(Transform* target, float leftBound, float rightBound, float upperBound, float lowerBound);
 	void Update(float dt);
 
 	Camera* camera;
@@ -26,7 +26,7 @@ public:
 	HitBox followBounds;
 private:
 	// Camera will follow this (probably player)
-	HitBox* followTarget;
+	Transform* followTarget;
 
 	// Applies paralax effect to these
 	std::vector<ParalaxTarget> paralaxTargets;

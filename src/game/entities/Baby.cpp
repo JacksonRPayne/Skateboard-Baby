@@ -175,7 +175,7 @@ void Baby::GroundedUpdate(float dt) {
 	if (inputDir && !InputCrouch()) {
 		// Direction player is facing
 		direction = inputDir;
-		// Directio player is actually moving
+		// Direction player is actually moving
 		float velSign = physicsController.velocity.x >= 0 ? 1.0f : -1.0f;
 		bool atMaxVel = std::abs(physicsController.velocity.x) >= MAX_GROUND_VELOCITY;
 		animator.PlayOnce("ride", true, true);
@@ -331,9 +331,9 @@ void Baby::UpdateBalanceMeter(float dt) {
 }
 
 void Baby::RenderBalanceMeter(Renderer* renderer) {
-	renderer->DrawQuad(texture, meterSubTex, glm::vec2(transform.position.x, transform.TopBoundary() - METER_HEIGHT), glm::vec2(1.0f, 0.5f));
+	renderer->DrawQuad(texture, meterSubTex, glm::vec2(transform.position.x, transform.TopBound() - METER_HEIGHT), glm::vec2(1.0f, 0.5f));
 	renderer->DrawQuad(texture, indicatorSubTex,
-		glm::vec2(transform.position.x, transform.TopBoundary() - METER_HEIGHT) + indicatorPos, glm::vec2(1.0f, 0.5f));
+		glm::vec2(transform.position.x, transform.TopBound() - METER_HEIGHT) + indicatorPos, glm::vec2(1.0f, 0.5f));
 }
 
 float Baby::InputDirection() {
