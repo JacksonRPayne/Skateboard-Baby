@@ -90,7 +90,7 @@ void Start_Testing() {
 
 	sd->camera.transform.ScaleFactor(2.0f, 2.0f);
 	sd->camera.transform.Translate(1.5f, -1.4f);
-	sd->camController.SetFollowTarget(sd->player.bodyHitBox, -1.3f, 0.0f, -0.5f, 0.0f);
+	sd->camController.SetFollowTarget(sd->player.bodyHitBox, -1.3f, 0.0f, -1.0f, 1.0f);
 }
 
 void Update_Testing(float dt) {
