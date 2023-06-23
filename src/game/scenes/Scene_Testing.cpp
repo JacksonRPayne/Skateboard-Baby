@@ -15,6 +15,7 @@ struct SceneTestingData {
 	SubTexture s = SubTexture();
 	LoopingBackground TEST_BACKGROUND;
 	CollisionGrid grid;
+	LevelRenderer levelRenderer;
 
 	void Update(float dt) {
 		player.Update(dt);
@@ -23,6 +24,7 @@ struct SceneTestingData {
 	}
 	void Render(Renderer* rend) {
 		rend->Start();
+		levelRenderer.Render(rend);
 		RenderLevelTiles(rend);
 		player.Render(rend);
 		//rail->Render(rend);
@@ -38,8 +40,10 @@ SceneTestingData* sd = nullptr;
 
 
 void RenderLevelTiles(Renderer* rend) {
+	//Texture* t = ResourceManager::GetTexture("backdrop");
+	//rend->DrawQuad(t, glm::vec2(0.0f, 0.0f), glm::vec2(t->width / 128.0f, t->height / 128.0f));
 	// Testing background
-	sd->TEST_BACKGROUND.Render(rend);
+	//sd->TEST_BACKGROUND.Render(rend);
 
 	// Draw Ground
 	sd->t.SetPosition(0.0f, 0.35f);
@@ -72,10 +76,11 @@ void RenderLevelTiles(Renderer* rend) {
 }
 
 void Load_Testing(){
-	ResourceManager::LoadTexture("res/textures/Grid.png", "testgrid", false);
 	sd = new SceneTestingData();
 
 	ResourceManager::LoadTexture("res/textures/Baby.png", "baby");
+	ResourceManager::LoadTexture("res/textures/Grid.png", "testgrid", false);
+	ResourceManager::LoadTexture("res/textures/Background.png", "backdrop");
 	sd->atlas = ResourceManager::LoadTexture("res/textures/TextureAtlas.png", "atlas");
 
 	// Populate scene data
@@ -101,7 +106,9 @@ void Start_Testing() {
 	SceneManager::renderer.camera = &sd->camera;
 
 	sd->camController.SetFollowTarget(&sd->player.transform, -1.5f, 0.2f, -0.5f, 2.0f);
-	sd->camController.AddParalaxTarget(&sd->TEST_BACKGROUND.rootTransform, 0.8f);
+	//sd->camController.AddParalaxTarget(&sd->TEST_BACKGROUND.rootTransform, 0.8f);
+	sd->levelRenderer.AddLoopingBackground(ResourceManager::GetTexture("testgrid"), SubTexture(), 
+		glm::vec2(0.0f, 0.0f), glm::vec2(2.0f, 2.0f), &sd->camera, 5, &sd->camController, 0.8f);
 }
 
 void Update_Testing(float dt) {
@@ -129,8 +136,9 @@ void Update_Testing(float dt) {
 	sd->Update(dt);
 	sd->Render(&SceneManager::renderer);
 	
-	glm::vec2 mPos = InputManager::GetWorldMousePos(Window::width, Window::height, sd->camera.right, sd->camera.transform);
-	std::cout << mPos.x << ", " << mPos.y << "\n";
+	glm::vec2 mPos = InputManager::GetWorldMousePos(Window::width, Window::height, sd->camera.right, sd->camera.transform)- sd->camera.transform.position;
+	//std::cout << mPos.x << ", " << mPos.y << "\n";
+	//std::cout << Window::width << ", " << Window::height << '\n';
 }
 
 void End_Testing() {

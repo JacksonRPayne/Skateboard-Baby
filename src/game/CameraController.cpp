@@ -39,6 +39,6 @@ void CameraController::Update(float dt) {
 	camera->transform.Translate(camMovement);
 	// Apply parallax
 	for (int i = 0; i < paralaxTargets.size(); i++) {
-		paralaxTargets[i].transform->Translate(camMovement * paralaxTargets[i].paralaxIntensity);
+		paralaxTargets[i].transform->Translate(camMovement * paralaxTargets[i].parallaxIntensity);
 	}
 }

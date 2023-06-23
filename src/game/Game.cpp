@@ -36,7 +36,7 @@ int Game::Run() {
     {
         // Clear screen
         glClear(GL_COLOR_BUFFER_BIT);
-        glClearColor(171.0f/ 255.0f, 214.0f/255.0f, 255.0f/255.0f, 1.0f);
+        glClearColor(255.0f/ 255.0f, 140.0f/255.0f, 251.0f/255.0f, 1.0f);
 
         // Calculate delta time
         currFrame = (float)glfwGetTime();
@@ -46,7 +46,7 @@ int Game::Run() {
         // Update current scene
         SceneManager::Update(deltaTime);
 
-       // Log::LogFPS(deltaTime, 100);
+        Log::LogFPS(deltaTime, 100);
 
         // Swap front and back buffers 
         window.SwapBuffers();

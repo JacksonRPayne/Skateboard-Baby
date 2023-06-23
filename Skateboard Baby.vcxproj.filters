@@ -2719,5 +2719,8 @@
     <Image Include="res\textures\TextureAtlas.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\textures\Background.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
