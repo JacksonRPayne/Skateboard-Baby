@@ -44,8 +44,6 @@ struct HitBox
 	HitBoxType tag;
 	// Calls function on a collision
 	void(*collisionCallback)(const HitBox& thisHitBox, const HitBox& otherHitBox);
-	// DEBUG
-	static int collisionChecks;
 
 	// --Specified Getters--
 	// Corners

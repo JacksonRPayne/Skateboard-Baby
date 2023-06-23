@@ -37,8 +37,10 @@ SceneTestingData* sd = nullptr;
 
 
 void RenderLevelTiles(Renderer* rend) {
-
+	// Testing background
 	rend->DrawQuad(ResourceManager::GetTexture("testgrid"), sd->TEST_BACKGROUND.position, sd->TEST_BACKGROUND.scale);
+	rend->DrawQuad(ResourceManager::GetTexture("testgrid"), sd->TEST_BACKGROUND.position + glm::vec2(sd->TEST_BACKGROUND.scale.x/2.0f, 0.0f), sd->TEST_BACKGROUND.scale);
+
 
 	// Draw Ground
 	sd->t.SetPosition(0.0f, 0.35f);
@@ -81,7 +83,7 @@ void Load_Testing(){
 	new (&sd->camera) Camera(Window::width, Window::height);
 	// I do these up here so cam controller can set up automatically
 	sd->camera.transform.ScaleFactor(2.0f, 2.0f);
-	sd->camera.transform.Translate(1.5f, -1.4f);
+	sd->camera.transform.Translate(3.3f, -1.4f);
 
 	new (&sd->grid) CollisionGrid(0.5f);
 	new (&sd->player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, &sd->grid); // <-- more goated than std::move
@@ -97,7 +99,7 @@ void Start_Testing() {
 	Window::screenCamera = &sd->camera;
 	SceneManager::renderer.camera = &sd->camera;
 
-	sd->camController.SetFollowTarget(&sd->player.transform, -1.5f, 0.2f, 0.5f, 2.0f);
+	sd->camController.SetFollowTarget(&sd->player.transform, -1.5f, 0.2f, -0.5f, 2.0f);
 	sd->camController.AddParalaxTarget(&sd->TEST_BACKGROUND, 0.8f);
 }
 
@@ -124,18 +126,8 @@ void Update_Testing(float dt) {
 	}
 	
 	sd->Update(dt);
-	
-	// This is so far from what I was trying to do haha
-	//float playerX = sd->player.transform.GetPosition().x;
-	//float rightBound = sd->camera.right * sd->camera.transform.GetScale().x - 0.8f;
-	//float leftBound = sd->camera.left * sd->camera.transform.GetScale().x + 0.8f;
-	//if(playerX >= rightBound || playerX <= leftBound) sd->camera.transform.SetPositionX(sd->player.transform.GetPosition().x);
-
 	sd->Render(&SceneManager::renderer);
-	//glm::vec2 hi = InputManager::GetWorldMousePos(Window::width, Window::height, sd->camera.right, sd->camera.transform);
-	//std::cout << hi.x << ", " << hi.y << '\n';
-	//std::cout << HitBox::collisionChecks << '\n';
-	HitBox::collisionChecks = 0;
+
 
 }
 

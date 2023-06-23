@@ -1,7 +1,5 @@
 #include "Hitbox.h"
 
-int HitBox::collisionChecks = 0;
-
 HitBox::HitBox()
 : localTransform(), parentEntity(nullptr), parentTransform(nullptr), 
 	collisionCallback(nullptr), tag(HitBoxType::None), active(true){}
@@ -35,7 +33,6 @@ bool HitBox::CheckCollision(const HitBox& other) {
 		if(collisionCallback) (*collisionCallback)(*this, other);
 	}
 
-	collisionChecks++;
 	return collision;
 }
 

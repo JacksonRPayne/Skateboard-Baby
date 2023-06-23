@@ -7,9 +7,9 @@
 // -- Get rid of warnings
 // -- clean & dry
 // -- Change game from class to function
-// -- Change to ground hitbox
-// 
+//  
 // Level Editing Tools
+// -- Create tilemap first
 // -- Will be easier to add once collision is all set
 // -- At simplest: some functions to put rails and stuff in
 // -- At most complex: full graphical level editor
@@ -20,10 +20,6 @@
 // ---- Is this slower than just rendering?
 // -- Ideally, I could have one spatial data structure to use for rendering and collision
 // -- Another note: maybe implement the tiling outlined in the comments of default.frag
-// 
-// Camera
-// -- Actual camera controller
-// -- Paralax :D
 // 
 // Ramps
 // -- Create ramps and add ability to have custom intersection function with a funcptr

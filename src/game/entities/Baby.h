@@ -56,6 +56,9 @@ private:
 	void UpdateBalanceMeter(float dt);
 	void FallOfRailUpdate(float dt);
 
+	// For state transition
+	void ActivateJumpState();
+
 	// Meter stuff
 	void RenderBalanceMeter(Renderer* renderer);
 	SubTexture meterSubTex; // For the meter itself

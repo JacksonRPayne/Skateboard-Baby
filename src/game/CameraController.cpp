@@ -10,6 +10,7 @@ void CameraController::SetFollowTarget(Transform* target, float leftBound, float
 	followBounds = HitBox(leftBound, rightBound, upperBound, lowerBound);
 	followBounds.parentTransform = &(camera->transform);
 }
+
 void CameraController::Update(float dt) {
 	// The movement of the camera for this frame
 	glm::vec2 camMovement(0.0f);
@@ -29,13 +30,14 @@ void CameraController::Update(float dt) {
 		camMovement.y = followTarget->TopBound() - followBounds.TopBound();
 	}
 
+	// Clamp cam position to minimum bounds
 	if ((camera->transform.position + camMovement).x < minimumPos.x || (camera->transform.position + camMovement).y > minimumPos.y) {
 		camMovement = minimumPos - camera->transform.position;
 	}
 
-	// Moves camera
+	// Move camera
 	camera->transform.Translate(camMovement);
-	// Applies parallax
+	// Apply parallax
 	for (int i = 0; i < paralaxTargets.size(); i++) {
 		paralaxTargets[i].transform->Translate(camMovement * paralaxTargets[i].paralaxIntensity);
 	}

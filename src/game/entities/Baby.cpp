@@ -46,7 +46,7 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 		// Set ground state
 		baby->physicsController.velocity.y = 0;
 		baby->physicsController.acceleration.y = 0;
-		baby->state = BabyState::Ground;
+		baby->grounded = true;
 		baby->balance = 0.0f;
 	}
 	else if (otherHitBox.tag == HitBoxType::GrindRail) {
@@ -168,6 +168,16 @@ void Baby::Update(float dt) {
 	touchingRail = false;
 }
 
+void Baby::ActivateJumpState() {
+	// Add velocity and restore velocity variable to its minimum
+	physicsController.velocity.y = -nextJumpVel;
+	nextJumpVel = MIN_JUMP_VEL;
+	// Set custom x vel and stop any deceleration
+	physicsController.acceleration.x = 0;
+	physicsController.velocity.x += JUMP_X_VEL * direction;
+	state = BabyState::Air;
+	grounded = false;
+}
 
 void Baby::GroundedUpdate(float dt) {
 	// Gets directional input
@@ -219,13 +229,7 @@ void Baby::GroundedUpdate(float dt) {
 		// Restore hitbox
 		bodyHitBox->localTransform.SetScaleY(0.8f);
 		bodyHitBox->localTransform.SetPositionY(0.0f);
-		// Add velocity and restore velocity variable to its minimum
-		physicsController.velocity.y = -nextJumpVel;
-		nextJumpVel = MIN_JUMP_VEL;
-		// Set custom x vel and stop any deceleration
-		physicsController.acceleration.x = 0;
-		physicsController.velocity.x += JUMP_X_VEL * direction;
-		state = BabyState::Air;
+		ActivateJumpState();
 	}
 }
 
@@ -246,7 +250,7 @@ void Baby::AirUpdate(float dt) {
 		animator.PlayOnce("grind", true, true);
 	}
 	// In the air
-	else if (transform.GetPosition().y < 0) {
+	else if (!grounded) {
 		// Changes to fastfall speed at peak of jump
 		if (physicsController.velocity.y < 0) {
 			physicsController.acceleration.y = FALLSPEED;
@@ -256,6 +260,9 @@ void Baby::AirUpdate(float dt) {
 			physicsController.acceleration.y = FASTFALLSPEED;
 			animator.PlayOnce("jumpDescend", false, true);
 		}
+	}
+	else {
+		state = BabyState::Ground;
 	}
 }
 
@@ -275,6 +282,7 @@ void Baby::GrindUpdate(float dt) {
 		state = BabyState::FallOffRail;
 		generateSparks = false;
 		balancing = false;
+		grounded = false;
 	}
 	// Crouch
 	else if (InputCrouch()) {
@@ -288,11 +296,7 @@ void Baby::GrindUpdate(float dt) {
 	else if (InputJump()) { // <-- think about if grind should still have charge/hold jumps
 		bodyHitBox->localTransform.SetScaleY(0.8f);
 		bodyHitBox->localTransform.SetPositionY(0.0f);
-		physicsController.velocity.y = -nextJumpVel;
-		nextJumpVel = MIN_JUMP_VEL;
-		physicsController.acceleration.x = 0;
-		physicsController.velocity.x += JUMP_X_VEL * physicsController.XVelDirection();
-		state = BabyState::Air;
+		ActivateJumpState();
 		generateSparks = false;
 		balancing = false;
 	}
@@ -301,12 +305,11 @@ void Baby::GrindUpdate(float dt) {
 
 void Baby::FallOfRailUpdate(float dt) {
 	// In air
-	if (transform.GetPosition().y < 0) {
+	if (!grounded) {
 		physicsController.acceleration.y = FASTFALLSPEED;
 	}
-	// On the "ground"
+	// On the ground
 	else {
-		transform.SetPositionY(0);
 		physicsController.velocity.y = 0;
 		physicsController.velocity.x = 0;
 		physicsController.acceleration.y = 0;
