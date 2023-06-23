@@ -13,7 +13,7 @@ struct SceneTestingData {
 	HitBox* ground;
 	Transform t = Transform(0.0f, 0.35f, 0.5f, 0.5f, 0.0f);
 	SubTexture s = SubTexture();
-	LoopingTexture TEST_BACKGROUND;
+	LoopingBackground TEST_BACKGROUND;
 	CollisionGrid grid;
 
 	void Update(float dt) {
@@ -88,7 +88,7 @@ void Load_Testing(){
 	new (&sd->player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, &sd->grid); // <-- more goated than std::move
 	new (&sd->camController) CameraController(&sd->camera);
 
-	new (&sd->TEST_BACKGROUND) LoopingTexture(ResourceManager::GetTexture("testgrid"), glm::vec2(0.0f, 0.0f), glm::vec2(2.0f, 2.0f), &sd->camera, 5);
+	new (&sd->TEST_BACKGROUND) LoopingBackground(ResourceManager::GetTexture("testgrid"), glm::vec2(0.0f, 0.0f), glm::vec2(2.0f, 2.0f), &sd->camera, 5);
 
 	sd->rail = sd->grid.Register(HitBox(2.0, 2.0 + 21.0f * 0.5f, -0.125f, 0.125f, HitBoxType::GrindRail));
 	sd->ground = sd->grid.Register(HitBox(-0.25f, 51.0f*0.5f + 0.75f, 0.5f, 1.0f, HitBoxType::Ground));
