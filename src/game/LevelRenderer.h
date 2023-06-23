@@ -8,29 +8,6 @@
 #include "graphics/Renderer.h"
 #include "game/CameraController.h"
 
-// For a background texture that should be looped on the x axis if it leaves the camera's sight
-struct LoopingBackground {
-	LoopingBackground() :texture(nullptr), camera(nullptr){}
-	LoopingBackground(Texture* texture, glm::vec2 startPos, glm::vec2 scale, Camera* camera, int maxCopies);
-	LoopingBackground(Texture* texture, SubTexture subTex, glm::vec2 startPos, glm::vec2 scale, Camera* camera, int maxCopies);
-
-	// The transform of the leftmost texture
-	Transform rootTransform;
-	Camera* camera;
-	Texture* texture;
-	SubTexture subTexture;
-	int maxCopies;
-
-	void Update();
-	void Render(Renderer* rend);
-};
-
-
-//struct Tile {
-//	Tile(SubTexture st, glm::vec2 pos, glm::vec2 scale) : subTexture(st), transform(pos, scale, 0.0f){}
-//	SubTexture subTexture;
-//	Transform transform;
-//};
 
 // Functional approach to rendering a level, sort of like turtle graphics
 // Data of level isn't stored anywhere, only stores a vector of function pointers that it calls one by one to render the level.

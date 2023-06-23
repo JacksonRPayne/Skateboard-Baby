@@ -90,7 +90,7 @@
     <ClCompile Include="src\game\CameraController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\LevelBuilding.cpp">
+    <ClCompile Include="src\game\LevelRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1877,7 +1877,7 @@
     <ClInclude Include="src\game\CameraController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\game\LevelBuilding.h">
+    <ClInclude Include="src\game\LevelRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
