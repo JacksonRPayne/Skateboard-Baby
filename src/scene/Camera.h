@@ -19,6 +19,11 @@ public:
 	void OnResize(int width, int height);
 	void AdjustProjection(float aspectRatio);
 
+	float RightBound() { return transform.position.x + transform.scale.x * right; }
+	float LeftBound() { return transform.position.x - (transform.scale.x * right); }
+	float TopBound() { return transform.position.y - transform.scale.y * bottom; }
+	float BottomBound() { return transform.position.y + transform.scale.y * bottom;}
+
 	float left = 0;
 	float right = 0;
 	float bottom = 0;

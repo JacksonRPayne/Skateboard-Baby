@@ -13,12 +13,13 @@ struct SceneTestingData {
 	HitBox* ground;
 	Transform t = Transform(0.0f, 0.35f, 0.5f, 0.5f, 0.0f);
 	SubTexture s = SubTexture();
-	Transform TEST_BACKGROUND = Transform(1.0f, 0.0f, 5.0f, 5.0f, 0.0f);
+	LoopingTexture TEST_BACKGROUND;
 	CollisionGrid grid;
 
 	void Update(float dt) {
 		player.Update(dt);
 		camController.Update(dt);
+		TEST_BACKGROUND.Update();
 	}
 	void Render(Renderer* rend) {
 		rend->Start();
@@ -38,9 +39,7 @@ SceneTestingData* sd = nullptr;
 
 void RenderLevelTiles(Renderer* rend) {
 	// Testing background
-	rend->DrawQuad(ResourceManager::GetTexture("testgrid"), sd->TEST_BACKGROUND.position, sd->TEST_BACKGROUND.scale);
-	rend->DrawQuad(ResourceManager::GetTexture("testgrid"), sd->TEST_BACKGROUND.position + glm::vec2(sd->TEST_BACKGROUND.scale.x/2.0f, 0.0f), sd->TEST_BACKGROUND.scale);
-
+	sd->TEST_BACKGROUND.Render(rend);
 
 	// Draw Ground
 	sd->t.SetPosition(0.0f, 0.35f);
@@ -89,6 +88,8 @@ void Load_Testing(){
 	new (&sd->player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, &sd->grid); // <-- more goated than std::move
 	new (&sd->camController) CameraController(&sd->camera);
 
+	new (&sd->TEST_BACKGROUND) LoopingTexture(ResourceManager::GetTexture("testgrid"), glm::vec2(0.0f, 0.0f), glm::vec2(2.0f, 2.0f), &sd->camera, 5);
+
 	sd->rail = sd->grid.Register(HitBox(2.0, 2.0 + 21.0f * 0.5f, -0.125f, 0.125f, HitBoxType::GrindRail));
 	sd->ground = sd->grid.Register(HitBox(-0.25f, 51.0f*0.5f + 0.75f, 0.5f, 1.0f, HitBoxType::Ground));
 	sd->grid.ConstructGrid();
@@ -100,7 +101,7 @@ void Start_Testing() {
 	SceneManager::renderer.camera = &sd->camera;
 
 	sd->camController.SetFollowTarget(&sd->player.transform, -1.5f, 0.2f, -0.5f, 2.0f);
-	sd->camController.AddParalaxTarget(&sd->TEST_BACKGROUND, 0.8f);
+	sd->camController.AddParalaxTarget(&sd->TEST_BACKGROUND.rootTransform, 0.8f);
 }
 
 void Update_Testing(float dt) {
@@ -127,8 +128,9 @@ void Update_Testing(float dt) {
 	
 	sd->Update(dt);
 	sd->Render(&SceneManager::renderer);
-
-
+	
+	glm::vec2 mPos = InputManager::GetWorldMousePos(Window::width, Window::height, sd->camera.right, sd->camera.transform);
+	std::cout << mPos.x << ", " << mPos.y << "\n";
 }
 
 void End_Testing() {
