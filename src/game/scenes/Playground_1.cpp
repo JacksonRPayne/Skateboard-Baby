@@ -17,8 +17,6 @@ struct Playground_1_Data {
 	void Render(Renderer* rend) {
 		rend->Start();
 		levelRenderer.Render(rend);
-		baby.Render(rend);
-		cameraController.followBounds.Render(rend);
 		rend->End();
 	}
 };
@@ -29,13 +27,14 @@ Texture* atlas = nullptr;
 void Load_Playground_1() {
 	// Load resources
 	ResourceManager::LoadTexture("res/textures/Baby.png", "baby");
+	ResourceManager::LoadTexture("res/textures/Background.png", "background");
 	atlas = ResourceManager::LoadTexture("res/textures/TextureAtlas.png", "atlas");
 
 	// Initialize data
 	sd = new Playground_1_Data();
 	new (&sd->camera) Camera(Window::width, Window::height);
 	new (&sd->collisionGrid) CollisionGrid(0.5f);
-	new (&sd->baby) Baby(0.0f, 0.0f, &sd->collisionGrid);
+	new (&sd->baby) Baby(0.0f, 1.0f, &sd->collisionGrid);
 	new (&sd->cameraController) CameraController(&sd->camera);
 	new (&sd->levelRenderer) LevelRenderer(&sd->camera, &sd->cameraController);
 
@@ -53,16 +52,32 @@ void Start_Playground_1() {
 	sd->cameraController.SetFollowTarget(&sd->baby.transform, -1.5f, 0.2f, -0.5f, 2.0f);
 
 	// -- LEVEL RENDER STEPS --
+	float levelYOffset = 1.4f;
+	// Backdrop
+	sd->levelRenderer.AddParallaxBackground(ResourceManager::GetTexture("background"), SubTexture(), glm::vec2(0), 1.0f);
 	// Grass 1
-	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 0, 9 * 64, 3 * 64, 64), glm::vec2(0.0f, -0.5f), 10, 0.1f);
+	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 0, 11 * 64, 2 * 64, 64), glm::vec2(0.0f, levelYOffset - 0.65f), 10, 0.2f);
+	// Grass 1
+	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 0, 9 * 64, 3 * 64, 64), glm::vec2(0.0f, levelYOffset-0.52f), 10, 0.1f);
 	// Grass 0
-	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 0, 7 * 64, 3 * 64, 64), glm::vec2(0.0f, -0.25f), 10);
+	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 0, 7 * 64, 3 * 64, 64), glm::vec2(0.0f, levelYOffset-0.25f), 10);
 	// Path
-	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 0, 64 * 4, 64 * 3, 64), glm::vec2(0), 10);
-	
-}
-void Update_Playground_1(float dt){
+	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 0, 64 * 4, 64 * 3, 64), glm::vec2(0, levelYOffset), 10);
+	// Baby
+	sd->levelRenderer.AddStep([](Renderer* rend) {sd->baby.Render(rend); });
+	// Grass -1
+	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 64*3, 0, 64 * 4, 64*2), glm::vec2(0, levelYOffset+0.2f), 10, -0.2f);
 
+}
+
+
+void Update_Playground_1(float dt){
+	if (InputManager::GetKey(GLFW_KEY_RIGHT_SHIFT)) {
+		sd->camera.transform.Scale(-4.0f * dt, -4.0f * dt);
+	}
+	if (InputManager::GetKey(GLFW_KEY_RIGHT_CONTROL)) {
+		sd->camera.transform.Scale(4.0f * dt, 4.0f * dt);
+	}
 	sd->Update(dt);
 	sd->Render(&SceneManager::renderer);
 }

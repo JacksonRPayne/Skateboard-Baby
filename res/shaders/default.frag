@@ -76,4 +76,5 @@ void main(){
 		case 14: color = fat_pixel_sample(textures[14], v_texCoord) * v_color; break;
 		case 15: color = fat_pixel_sample(textures[15], v_texCoord) * v_color; break;
 	};
+
 }
