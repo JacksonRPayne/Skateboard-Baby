@@ -7,7 +7,7 @@ std::unordered_map<std::string, Shader*> ResourceManager::shaderMap;
 
 Texture* ResourceManager::LoadTexture(const char* path, const std::string& name, bool alpha) {
 	// Don't reload texture
-	if (textureMap.count(name)) return nullptr;
+	if (textureMap.count(name)) return textureMap[name];
 	
 	Texture* texture = new Texture(path, alpha);
 	textureMap[name] = texture;

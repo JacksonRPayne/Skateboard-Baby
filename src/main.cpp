@@ -9,7 +9,6 @@
 // -- Change game from class to function
 //  
 // Level Editing Tools
-// -- Create tilemap first
 // -- Will be easier to add once collision is all set
 // -- At simplest: some functions to put rails and stuff in
 // -- At most complex: full graphical level editor

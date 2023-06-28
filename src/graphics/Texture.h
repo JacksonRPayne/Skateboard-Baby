@@ -2,9 +2,11 @@
 #include <glad/glad.h>
 #include <stb_image/stb_image.h>
 #include <iostream>
-#include "system/Log.h"
 #include <sstream>
+#include <glm/glm.hpp>
+#include "system/Log.h"
 
+#define PIXELS_PER_WORLD_UNIT 128.0f
 
 class Texture 
 {
@@ -23,6 +25,8 @@ public:
 	// NOTE: I don't actually use this in the renderer anymore so this is for explicitly unbinding a texture
 	// Which is something I don't actually know if anyone would ever need to do. I'll just keep it around though
 	void Unbind();
+	// Returns the scale the texture would take up in world space
+	glm::vec2 WorldSize() { return glm::vec2(width / PIXELS_PER_WORLD_UNIT, height / PIXELS_PER_WORLD_UNIT); }
 
 	int GetBoundSlot() { return boundSlot; }
 	int boundSlot;
@@ -54,9 +58,6 @@ struct SubTexture {
 		pixHeight = height;
 		CalculateCoordinates(tex->width, tex->height);
 	}
-	// Pixel x and y offset with size
-	int xPix, yPix;
-	int pixWidth, pixHeight;
 
 	// For texture coordinates
 	float xCoord, yCoord;
@@ -68,4 +69,10 @@ struct SubTexture {
 		coordWidth = (float)pixWidth / (float)tWidth;
 		coordHeight = (float)pixHeight / (float)tHeight;
 	}
+
+private:
+	// Pixel x and y offset with size
+	// Private bc shouldn't be used as could be just 0 on default constructor
+	int xPix, yPix;
+	int pixWidth, pixHeight;
 };

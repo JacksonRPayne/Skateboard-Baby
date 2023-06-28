@@ -78,6 +78,7 @@ void Load_Testing(){
 
 	ResourceManager::LoadTexture("res/textures/Baby.png", "baby");
 	ResourceManager::LoadTexture("res/textures/Grid.png", "testgrid", false);
+	ResourceManager::LoadTexture("res/textures/Houses.png", "houses");
 	ResourceManager::LoadTexture("res/textures/Background.png", "backdrop");
 	sd->atlas = ResourceManager::LoadTexture("res/textures/TextureAtlas.png", "atlas");
 
@@ -91,6 +92,8 @@ void Load_Testing(){
 	new (&sd->player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, &sd->grid); // <-- more goated than std::move
 	new (&sd->camController) CameraController(&sd->camera);
 
+	new(&sd->levelRenderer)  LevelRenderer(&sd->camera, &sd->camController);
+
 	sd->rail = sd->grid.Register(HitBox(2.0, 2.0 + 21.0f * 0.5f, -0.125f, 0.125f, HitBoxType::GrindRail));
 	sd->ground = sd->grid.Register(HitBox(-0.25f, 51.0f*0.5f + 0.75f, 0.5f, 1.0f, HitBoxType::Ground));
 	sd->grid.ConstructGrid();
@@ -103,8 +106,16 @@ void Start_Testing() {
 
 	sd->camController.SetFollowTarget(&sd->player.transform, -1.5f, 0.2f, -0.5f, 2.0f);
 	//sd->camController.AddParalaxTarget(&sd->TEST_BACKGROUND.rootTransform, 0.8f);
-	sd->levelRenderer.AddLoopingBackground(ResourceManager::GetTexture("testgrid"), SubTexture(), 
-		glm::vec2(0.0f, 0.0f), glm::vec2(2.0f, 2.0f), &sd->camera, 5, &sd->camController, 0.8f);
+	Texture* t = ResourceManager::GetTexture("backdrop");
+	sd->levelRenderer.AddParallaxBackground(ResourceManager::GetTexture("backdrop"), SubTexture(),
+		sd->camera.transform.position, glm::vec2(t->width / 128.0f, t->height/128.0f),  1.0f);
+	//sd->levelRenderer.AddLoopingBackground(ResourceManager::GetTexture("testgrid"), SubTexture(), 
+	//	glm::vec2(0.0f, -1.0f), glm::vec2(3.0f, 3.0f), &sd->camera, 10, &sd->camController, 0.6f);
+	Texture* houses = ResourceManager::GetTexture("houses");
+	sd->levelRenderer.AddLoopingBackground(houses, SubTexture(), glm::vec2(0.0f, -(houses->height/128.0f)/2.0f+0.5f), 5, 0.0f);
+	Texture* atlas = ResourceManager::GetTexture("atlas");
+	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 0, 64 * 4, 64 * 3, 64), glm::vec2(0, 0.11f), 20, 0.0f);
+
 }
 
 void Update_Testing(float dt) {
@@ -128,17 +139,22 @@ void Update_Testing(float dt) {
 	if (InputManager::GetKey(GLFW_KEY_RIGHT_CONTROL)) {
 		sd->camera.transform.Scale(4.0f * dt, 4.0f * dt);
 	}
+	if (InputManager::GetKeyDown(GLFW_KEY_R)) {
+		End_Testing();
+		Load_Testing();
+		Start_Testing();
+	}
+
 	
 	sd->Update(dt);
 	sd->Render(&SceneManager::renderer);
 	
 	glm::vec2 mPos = InputManager::GetWorldMousePos(Window::width, Window::height, sd->camera.right, sd->camera.transform)- sd->camera.transform.position;
-	//std::cout << mPos.x << ", " << mPos.y << "\n";
-	//std::cout << Window::width << ", " << Window::height << '\n';
+	std::cout << mPos.x << ", " << mPos.y << "\n";
 }
 
 void End_Testing() {
-
+	Unload_Testing();
 }
 
 void Unload_Testing() {

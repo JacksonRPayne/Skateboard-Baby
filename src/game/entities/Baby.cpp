@@ -175,6 +175,8 @@ void Baby::ActivateJumpState() {
 	// Set custom x vel and stop any deceleration
 	physicsController.acceleration.x = 0;
 	physicsController.velocity.x += JUMP_X_VEL * direction;
+	if (physicsController.XSpeed() > GRIND_MAX_SPEED)
+		physicsController.velocity.x = GRIND_MAX_SPEED * physicsController.XVelDirection();
 	state = BabyState::Air;
 	grounded = false;
 }
