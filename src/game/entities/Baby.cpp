@@ -56,7 +56,7 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	}
 }
 
-Baby::Baby(float xPos, float yPos, float xScale, float yScale, float rotation, CollisionGrid* grid, const std::string name)
+Baby::Baby(float xPos, float yPos, CollisionGrid* grid, const std::string name, float xScale, float yScale, float rotation)
 	: Entity(xPos, yPos, xScale, yScale, rotation, name), physicsController(&transform, grid), state(BabyState::Ground),
 	direction(1.0f), nextJumpVel(MIN_JUMP_VEL){
 

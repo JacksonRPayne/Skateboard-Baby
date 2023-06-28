@@ -2,8 +2,8 @@
 
 void RenderLevelTiles(Renderer* rend);
 
-struct SceneTestingData {
-	SceneTestingData() : atlas(nullptr), rail(nullptr), ground(nullptr) {};
+struct Scene_Testing_Data {
+	Scene_Testing_Data() : atlas(nullptr), rail(nullptr), ground(nullptr) {};
 	
 	Baby player;
 	Camera camera;
@@ -34,7 +34,7 @@ struct SceneTestingData {
 };
 
 // sd for "scene data", needs a short name bc its used a lot
-SceneTestingData* sd = nullptr; 
+Scene_Testing_Data* sd = nullptr;
 
 
 void RenderLevelTiles(Renderer* rend) {
@@ -74,7 +74,7 @@ void RenderLevelTiles(Renderer* rend) {
 }
 
 void Load_Testing(){
-	sd = new SceneTestingData();
+	sd = new Scene_Testing_Data();
 
 	ResourceManager::LoadTexture("res/textures/Baby.png", "baby");
 	ResourceManager::LoadTexture("res/textures/Grid.png", "testgrid", false);
@@ -89,7 +89,7 @@ void Load_Testing(){
 	sd->camera.transform.Translate(3.3f, -1.4f);
 
 	new (&sd->grid) CollisionGrid(0.5f);
-	new (&sd->player) Baby(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, &sd->grid); // <-- more goated than std::move
+	new (&sd->player) Baby(0.0f, 0.0f, &sd->grid); // <-- more goated than std::move
 	new (&sd->camController) CameraController(&sd->camera);
 
 	new(&sd->levelRenderer)  LevelRenderer(&sd->camera, &sd->camController);

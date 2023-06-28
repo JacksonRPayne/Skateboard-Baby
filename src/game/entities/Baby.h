@@ -20,7 +20,7 @@ class Baby : public Entity
 public:
 	// It can be assumed that this will never be *explicitly* called
 	Baby() : texture(nullptr), direction(0.0f), state(BabyState::Ground), nextJumpVel(0.0f){}
-	Baby(float xPos, float yPos, float xScale, float yScale, float rotation, CollisionGrid* grid, const std::string name = "Baby");
+	Baby(float xPos, float yPos, CollisionGrid* grid, const std::string name = "Baby", float xScale=1.0f, float yScale=1.0f, float rotation=0.0f);
 	// Baby is too fat to copy or move, use placement new
 	Baby(Baby& other) = delete;
 	Baby& operator=(Baby& other) = delete;

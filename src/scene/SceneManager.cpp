@@ -46,5 +46,11 @@ void SceneManager::SetCurrentScene(const std::string& sceneName) {
 	}
 	// Screen camera will be swapped in here
 	currentScene->Start();
+	// TODO: do I still need this line??
 	Window::screenCamera->AdjustProjection(aspectRatio);
+}
+
+void SceneManager::SetCamera(Camera* camera) {
+	Window::screenCamera = camera;
+	renderer.camera = camera;
 }

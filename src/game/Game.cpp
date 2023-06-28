@@ -5,6 +5,9 @@ Game::Game(const std::string &name) : name(name){}
 void InitScenes() {
     SceneManager::Init();
     SceneManager::AddScene(&Scenes::testing);
+    SceneManager::AddScene(&Scenes::playground_1);
+
+    SceneManager::SetCurrentScene("playground_1");
 }
 
 int Game::Run() {

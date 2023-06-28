@@ -12,6 +12,7 @@ void CameraController::SetFollowTarget(Transform* target, float leftBound, float
 }
 
 void CameraController::Update(float dt) {
+	if (!followTarget) return;
 	// The movement of the camera for this frame
 	glm::vec2 camMovement(0.0f);
 

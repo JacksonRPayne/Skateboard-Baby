@@ -17,6 +17,7 @@ public:
 
 	// Scenes keep state between switches (maybe create scene reset method?)
 	static void SetCurrentScene(const std::string &sceneName);
+	static void SetCamera(Camera* camera);
 	static void AddScene(Scene* scene);
 
 	static void Update(float dt);
