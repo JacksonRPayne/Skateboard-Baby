@@ -29,11 +29,15 @@ void Renderer::Initialize() {
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
+	glEnableVertexAttribArray(5);
 	// Specify vertex attributes
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*)offsetof(QuadVertex, position));
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*)offsetof(QuadVertex, color));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*)offsetof(QuadVertex, texCoord));
 	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*)offsetof(QuadVertex, texSlot));
+	glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*)offsetof(QuadVertex, tileCount));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*)offsetof(QuadVertex, texCoordBounds));
 
 	// Initialize index buffer with quad indicies up to max indicies 
 	unsigned int* quadIndices = new unsigned int[MAX_INDICES];
@@ -194,7 +198,8 @@ void Renderer::DrawQuad(Texture* texture, glm::vec2 position, glm::vec2 scale) {
 	DrawQuad(texture, defaultSubTexture, position, scale);
 }
 
-void Renderer::DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec2 position, glm::vec2 scale) {
+// PREFFERED FUNCTION
+void Renderer::DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec2 position, glm::vec2 scale, bool tiled) {
 	// Another draw call needed
 	if (numIndices > MAX_INDICES - 6) {
 		End();
@@ -220,12 +225,22 @@ void Renderer::DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec
 
 	texSlot = (float)texture->GetBoundSlot();
 	glm::vec2 offset = scale / 2.0f;
+	
+	glm::vec2 tileCount(1.0f,1.0f);
+	glm::vec4 texCoordBounds(0, 0, 1, 1);
+	if (tiled) {
+		tileCount = glm::vec2(scale / texture->SubWorldSize(subTexture));
+		texCoordBounds = glm::vec4(subTexture.xCoord, subTexture.yCoord,
+			subTexture.xCoord + subTexture.coordWidth, subTexture.yCoord + subTexture.coordHeight);
+	}
 
 	// Bottom left vertex
 	quadBufferPointer->position = glm::vec3(position.x - offset.x, position.y - offset.y, 0.0f);
 	quadBufferPointer->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	quadBufferPointer->texCoord = { subTexture.xCoord, subTexture.yCoord };
 	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer->tileCount = tileCount;
+	quadBufferPointer->texCoordBounds = texCoordBounds;
 	quadBufferPointer++;
 
 	// Bottom right vertex
@@ -233,6 +248,8 @@ void Renderer::DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec
 	quadBufferPointer->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	quadBufferPointer->texCoord = { subTexture.xCoord + subTexture.coordWidth, subTexture.yCoord };
 	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer->tileCount = tileCount;
+	quadBufferPointer->texCoordBounds = texCoordBounds;
 	quadBufferPointer++;
 
 	// Top right vertex
@@ -240,6 +257,8 @@ void Renderer::DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec
 	quadBufferPointer->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	quadBufferPointer->texCoord = { subTexture.xCoord + subTexture.coordWidth, subTexture.yCoord + subTexture.coordHeight };
 	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer->tileCount = tileCount;
+	quadBufferPointer->texCoordBounds = texCoordBounds;
 	quadBufferPointer++;
 
 	// Top left vertex
@@ -247,6 +266,8 @@ void Renderer::DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec
 	quadBufferPointer->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	quadBufferPointer->texCoord = { subTexture.xCoord, subTexture.yCoord + subTexture.coordHeight };
 	quadBufferPointer->texSlot = texSlot;
+	quadBufferPointer->tileCount = tileCount;
+	quadBufferPointer->texCoordBounds = texCoordBounds;
 	quadBufferPointer++;
 
 	numIndices += 6;

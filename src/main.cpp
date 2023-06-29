@@ -7,6 +7,10 @@
 // -- Get rid of warnings
 // -- clean & dry
 // -- Change game from class to function
+// 
+// Most CPU intensive functions:
+// -- CollisionGrid::CheckCollision
+// -- Not that hot, but recreating view matrix every frame is ridiculous
 //  
 // Level Editing Tools
 // -- Will be easier to add once collision is all set

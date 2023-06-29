@@ -143,7 +143,6 @@ void Baby::Update(float dt) {
 	CollisionGrid::currentGrid->CheckCollision(bodyHitBox);
 	CollisionGrid::currentGrid->CheckCollision(boardHitBox);
 
-
 	switch (state)
 	{
 	case BabyState::Ground:

@@ -46,10 +46,13 @@ void LevelRenderer::AddLoopingBackground(Texture* tex, SubTexture subTex, glm::v
 		else if (rootTransform->LeftBound() > camera->LeftBound()) {
 			rootTransform->position -= glm::vec2(rootTransform->scale.x, 0.0f);
 		}
-
+		
 		// Renders the looped tiles
 		for (int i = 0; i < maxCopies; i++) {
 			rend->DrawQuad(tex, subTex, rootTransform->position + glm::vec2(i * (rootTransform->scale.x), 0.0f), rootTransform->scale);
 		}
+
+		//scale.x = Window::WorldWidth();
+		//rend->DrawQuad(tex, subTex, rootTransform->position, scale, true);
 	});
 }

@@ -4,6 +4,9 @@ layout (location=0) out vec4 color;
 
 in vec4 v_color;
 in vec2 v_texCoord;
+in vec2 v_tileCount;
+in vec4 v_texCoordBounds;
+in vec2 v_stretchFactor;
 flat in float v_texSlot;
 
 uniform sampler2D[16] textures;
@@ -57,24 +60,27 @@ vec4 fat_pixel_sample(sampler2D tex, vec2 uv){
 }
 
 void main(){
+	vec2 tiledUV = mod((v_texCoord - v_texCoordBounds.xy)* v_tileCount, (v_texCoordBounds.zw-v_texCoordBounds.xy)) + v_texCoordBounds.xy;
 	switch(int(v_texSlot)){
 		case -1: color = v_color; break;
-		case 0: color = fat_pixel_sample(textures[0], v_texCoord) * v_color; break;
-		case 1: color = fat_pixel_sample(textures[1], v_texCoord) * v_color; break;
-		case 2: color = fat_pixel_sample(textures[2], v_texCoord) * v_color; break;
-		case 3: color = fat_pixel_sample(textures[3], v_texCoord) * v_color; break;
-		case 4: color = fat_pixel_sample(textures[4], v_texCoord) * v_color; break;
-		case 5: color = fat_pixel_sample(textures[5], v_texCoord) * v_color; break;
-		case 6: color = fat_pixel_sample(textures[6], v_texCoord) * v_color; break;
-		case 7: color = fat_pixel_sample(textures[7], v_texCoord) * v_color; break;
-		case 8: color = fat_pixel_sample(textures[8], v_texCoord) * v_color; break;
-		case 9: color = fat_pixel_sample(textures[9], v_texCoord) * v_color; break;
-		case 10: color = fat_pixel_sample(textures[10], v_texCoord) * v_color; break;
-		case 11: color = fat_pixel_sample(textures[11], v_texCoord) * v_color; break;
-		case 12: color = fat_pixel_sample(textures[12], v_texCoord) * v_color; break;
-		case 13: color = fat_pixel_sample(textures[13], v_texCoord) * v_color; break;
-		case 14: color = fat_pixel_sample(textures[14], v_texCoord) * v_color; break;
-		case 15: color = fat_pixel_sample(textures[15], v_texCoord) * v_color; break;
+		case 0: color = fat_pixel_sample(textures[0], tiledUV) * v_color; break;
+		case 1: color = fat_pixel_sample(textures[1], tiledUV) * v_color; break;
+		case 2: color = fat_pixel_sample(textures[2], tiledUV) * v_color; break;
+		case 3: color = fat_pixel_sample(textures[3], tiledUV) * v_color; break;
+		case 4: color = fat_pixel_sample(textures[4], tiledUV) * v_color; break;
+		case 5: color = fat_pixel_sample(textures[5], tiledUV) * v_color; break;
+		case 6: color = fat_pixel_sample(textures[6], tiledUV) * v_color; break;
+		case 7: color = fat_pixel_sample(textures[7], tiledUV) * v_color; break;
+		case 8: color = fat_pixel_sample(textures[8], tiledUV) * v_color; break;
+		case 9: color = fat_pixel_sample(textures[9], tiledUV) * v_color; break;
+		case 10: color = fat_pixel_sample(textures[10], tiledUV) * v_color; break;
+		case 11: color = fat_pixel_sample(textures[11], tiledUV) * v_color; break;
+		case 12: color = fat_pixel_sample(textures[12], tiledUV) * v_color; break;
+		case 13: color = fat_pixel_sample(textures[13], tiledUV) * v_color; break;
+		case 14: color = fat_pixel_sample(textures[14], tiledUV) * v_color; break;
+		case 15: color = fat_pixel_sample(textures[15], tiledUV) * v_color; break;
 	};
+
+	color.rgb *= color.a;
 
 }

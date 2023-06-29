@@ -34,7 +34,7 @@ void Load_Playground_1() {
 	sd = new Playground_1_Data();
 	new (&sd->camera) Camera(Window::width, Window::height);
 	new (&sd->collisionGrid) CollisionGrid(0.5f);
-	new (&sd->baby) Baby(0.0f, 1.0f, &sd->collisionGrid);
+	new (&sd->baby) Baby(0.0f, 1.05f, &sd->collisionGrid);
 	new (&sd->cameraController) CameraController(&sd->camera);
 	new (&sd->levelRenderer) LevelRenderer(&sd->camera, &sd->cameraController);
 
@@ -55,6 +55,12 @@ void Start_Playground_1() {
 	float levelYOffset = 1.4f;
 	// Backdrop
 	sd->levelRenderer.AddParallaxBackground(ResourceManager::GetTexture("background"), SubTexture(), glm::vec2(0), 1.0f);
+	// Street 1
+	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 6 * 64, 3 * 64, 64, 64), glm::vec2(0.0f, levelYOffset - 1.1f), 20, 0.4f);
+	// Street 0
+	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 6 * 64, 4 * 64, 64, 64), glm::vec2(0.0f, levelYOffset - 0.62f), 20, 0.3f);
+	// Fence
+	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 4*64, 3 * 64, 64, 2 * 64), glm::vec2(0.0f, levelYOffset - 1.1f), 20, 0.2f);
 	// Grass 1
 	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 0, 11 * 64, 2 * 64, 64), glm::vec2(0.0f, levelYOffset - 0.65f), 10, 0.2f);
 	// Grass 1
@@ -64,7 +70,7 @@ void Start_Playground_1() {
 	// Path
 	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 0, 64 * 4, 64 * 3, 64), glm::vec2(0, levelYOffset), 10);
 	// Baby
-	sd->levelRenderer.AddStep([](Renderer* rend) {sd->baby.Render(rend); });
+	sd->levelRenderer.AddStep([](Renderer* rend) { sd->baby.Render(rend); });
 	// Grass -1
 	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 64*3, 0, 64 * 4, 64*2), glm::vec2(0, levelYOffset+0.2f), 10, -0.2f);
 

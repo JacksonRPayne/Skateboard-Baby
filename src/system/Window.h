@@ -7,6 +7,8 @@
 #include "system/Log.h"
 #include "InputManager.h"
 
+#define PIXELS_PER_WORLD_UNIT 128.0f
+
 // Currently only supports one window (static width and height)
 class Window
 {
@@ -19,6 +21,8 @@ public:
 	// Getters??
 	int GetWidth() { return Window::width; }
 	int GetHeight() { return Window::height; }
+	static float WorldWidth() { return (float)width / PIXELS_PER_WORLD_UNIT; }
+	static float WorldHeight() { return (float)height / PIXELS_PER_WORLD_UNIT; }
 	bool IsOpen() { return !glfwWindowShouldClose(window); }
 	void SwapBuffers() { glfwSwapBuffers(window); }
 	

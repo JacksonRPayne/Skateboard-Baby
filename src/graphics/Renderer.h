@@ -6,7 +6,7 @@
 #define MAX_QUADS 10000
 #define MAX_VERTICES MAX_QUADS*4
 #define MAX_INDICES MAX_QUADS*6
-#define MAX_TEXTURES 2
+#define MAX_TEXTURES 16
 
 // The format of each vertex in vertex buffer
 struct QuadVertex {
@@ -14,6 +14,11 @@ struct QuadVertex {
 	glm::vec4 color;
 	glm::vec2 texCoord;
 	float texSlot;
+	// Amount of times quad's texture is tiled
+	glm::vec2 tileCount;
+	// .xy = minimum texture coordinates
+	// .zw = maximum texture coordinates
+	glm::vec4 texCoordBounds;
 };
 
 class Renderer
@@ -39,9 +44,8 @@ public:
 	// Renders quad with texture
 	void DrawQuad(Texture* texture, const glm::mat4& modelMatrix);
 	void DrawQuad(Texture* texture, glm::vec2 position, glm::vec2 scale);
-	// Renders quad with subtexture
-	// This is the most preffered method to render a quad
-	void DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec2 position, glm::vec2 scale);
+	// PREFFERED FUNCTION
+	void DrawQuad(Texture* texture, const SubTexture& subTexture, glm::vec2 position, glm::vec2 scale, bool tiled = false);
 	// Use this for rotated quads ONLY: the matrix mu
 	void DrawQuad(Texture* texture, const SubTexture &subTexture, const glm::mat4& modelMatrix);
 	// Draws a line for debugging ONLY. Not written batched, so performance is slow but it's only for debugging

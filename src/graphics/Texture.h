@@ -5,8 +5,9 @@
 #include <sstream>
 #include <glm/glm.hpp>
 #include "system/Log.h"
+#include "system/Window.h"
 
-#define PIXELS_PER_WORLD_UNIT 128.0f
+struct SubTexture;
 
 class Texture 
 {
@@ -27,6 +28,8 @@ public:
 	void Unbind();
 	// Returns the scale the texture would take up in world space
 	glm::vec2 WorldSize() { return glm::vec2(width / PIXELS_PER_WORLD_UNIT, height / PIXELS_PER_WORLD_UNIT); }
+	// Given a subtexture, returns the expected size of the subtexture in world units
+	glm::vec2 SubWorldSize(const SubTexture& subTex);
 
 	int GetBoundSlot() { return boundSlot; }
 	int boundSlot;
