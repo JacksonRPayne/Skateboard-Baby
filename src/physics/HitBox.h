@@ -8,7 +8,8 @@ enum class HitBoxType {
 	None = 0,
 	Ground = 1,
 	Player = 2,
-	GrindRail = 3
+	GrindRail = 3,
+	Ramp = 4
 };
 
 struct HitBox
@@ -16,7 +17,8 @@ struct HitBox
 	// --Basic Functions--
 	HitBox();
 	HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent,
-		void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox),  HitBoxType tag=HitBoxType::None);
+		void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox),  
+		void(*exitCallback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag=HitBoxType::None);
 	HitBox(float leftBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag = HitBoxType::None);
 
 	// Checks collision with another hitbox and calls parent entity callback
@@ -44,6 +46,8 @@ struct HitBox
 	HitBoxType tag;
 	// Calls function on a collision
 	void(*collisionCallback)(const HitBox& thisHitBox, const HitBox& otherHitBox);
+	// Calls when they stop colliding
+	void(*collisionExitCallback)(const HitBox& thisHitBox, const HitBox& otherHitBox);
 
 	// --Specified Getters--
 	// Corners

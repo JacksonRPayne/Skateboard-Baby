@@ -7,7 +7,7 @@ void InitScenes() {
     SceneManager::AddScene(&Scenes::testing);
     SceneManager::AddScene(&Scenes::playground_1);
 
-    SceneManager::SetCurrentScene("playground_1");
+    //SceneManager::SetCurrentScene("playground_1");
 }
 
 int Game::Run() {
@@ -49,7 +49,7 @@ int Game::Run() {
         // Update current scene
         SceneManager::Update(deltaTime);
 
-        Log::LogFPS(deltaTime, 100);
+        //Log::LogFPS(deltaTime, 100);
 
         // Swap front and back buffers 
         window.SwapBuffers();

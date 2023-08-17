@@ -8,6 +8,8 @@ CollisionGrid::CollisionGrid(float cellSize)
 	cells = nullptr;
 	hitboxes.reserve(10);
 	currentGrid = this;
+	lastCollisions = nullptr;
+	currLastCollisions = nullptr;
 }
 
 HitBox* CollisionGrid::Register(const HitBox &hitBox) {
@@ -23,6 +25,7 @@ HitBox* CollisionGrid::Register(const HitBox &hitBox) {
 	hitboxes[hitBoxId].id = hitBoxId;
 
 	// TODO: uh oh.. vector resize = stale pointer, fuck
+	// wait didn't I figure out that I can use std::list?? cvome back to this
 	return &hitboxes[hitBoxId];
 
 }
@@ -60,6 +63,10 @@ void CollisionGrid::ConstructGrid() {
 	for (int i = 0; i < hitboxes.size(); i++) {
 		InsertToGrid(hitboxes[i]);
 	}
+
+	// For keeping track of collision exits
+	lastCollisions = new int[hitboxes.size() * hitboxes.size()] {0};
+	currLastCollisions = new int[hitboxes.size()] {0};
 }
 
 int CollisionGrid::GetCellOfPoint(glm::vec2 point) {
@@ -97,8 +104,8 @@ void CollisionGrid::GetCellsOfBox(int hitboxId, int topLeftCell, int bottomRight
 		bottomRightCell = GetCellOfPoint(adjustedPoint);
 	}
 
-	int cellWidth = std::max(CellX(bottomRightCell) - CellX(topLeftCell), 0);
-	int cellHeight = std::max(CellY(bottomRightCell) - CellY(topLeftCell), 0);
+	int cellWidth = std::abs(CellX(bottomRightCell) - CellX(topLeftCell));
+	int cellHeight = std::abs(CellY(bottomRightCell) - CellY(topLeftCell));
 
 
 	for (int y = 0; y <= cellHeight; y++) {
@@ -125,6 +132,13 @@ void CollisionGrid::InsertToGrid(const HitBox& hitbox) {
 
 
 void CollisionGrid::CheckCollision(HitBox* hitbox) {
+	
+	// Stores all the collision data from last check
+	for (int i = 0; i < hitboxes.size(); i++) {
+		currLastCollisions[i] = getLastCollision(hitbox->id, i);
+	}
+	// Wipes the last frame collision data
+	memset(&lastCollisions[hitbox->id * hitboxes.size()], 0, sizeof(int) * hitboxes.size());
 
 	std::vector<int> occupiedCells = std::vector<int>();
 	GetCellsOfBox(hitbox->id, hitbox->topLeftCell, hitbox->bottomRightCell, &occupiedCells);
@@ -137,9 +151,18 @@ void CollisionGrid::CheckCollision(HitBox* hitbox) {
 			int hbid = (cells[occupiedCells[c]])[i];
 			// Already checked coll on this hb
 			if (std::find(checkedHitboxes.begin(), checkedHitboxes.end(), hbid) != checkedHitboxes.end()) continue;
-			hitbox->CheckCollision(hitboxes[hbid]);
+			// Actual collision check
+			if (hitbox->CheckCollision(hitboxes[hbid])) {
+				// Updates map
+				setLastCollision(hitbox->id, hbid, hbid);
+			}
 			checkedHitboxes.push_back(hbid);
 		}
+	}
+
+	// Checks for collision exits
+	for (int i = 0; i < hitboxes.size(); i++) {
+		if (currLastCollisions[i] && !getLastCollision(hitbox->id, i)) hitbox->collisionExitCallback(*hitbox, hitboxes[i]);
 	}
 }
 
@@ -203,4 +226,15 @@ void CollisionGrid::DEBUG_RENDER(Renderer* renderer) {
 		}
 		renderer->DrawQuad(color, pos, glm::vec2(CELL_SIZE));
 	}
+	
+
+	// Draw each hitbox
+	for (int i = 0; i < hitboxes.size(); i++) {
+		hitboxes[i].Render(renderer);
+	}
+}
+
+
+CollisionGrid::~CollisionGrid() {
+	delete[] lastCollisions;
 }

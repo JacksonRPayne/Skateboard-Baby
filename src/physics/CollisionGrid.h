@@ -46,8 +46,9 @@
 class CollisionGrid
 {
 public:
-	CollisionGrid(): CELL_SIZE(-1.0f), cells(nullptr){}
+	CollisionGrid(): CELL_SIZE(-1.0f), cells(nullptr), lastCollisions(nullptr){}
 	CollisionGrid(float cellSize);
+	~CollisionGrid();
 
 	// Not really singleton -- replaced every time new one is created
 	static CollisionGrid* currentGrid;
@@ -87,10 +88,19 @@ private:
 	
 	void GetCellsOfBox(int hitboxId, int topLeftCell, int bottomRightCell, std::vector<int>* returnCells);
 
-
-
 	// Stores all hitboxes in scene
 	std::vector<HitBox> hitboxes;
+
+	// "2D" map of hitbox id's storing what collisions were occuring last frame
+	int* lastCollisions;
+	int getLastCollision(int thisCol, int otherCol){
+		return lastCollisions[thisCol * hitboxes.size() + otherCol];
+	}
+	void setLastCollision(int thisCol, int otherCol, int value) {
+		lastCollisions[thisCol*hitboxes.size() + otherCol] = value;
+	}
+	// Used for checking collision exits (want to heap allocate only once)
+	int* currLastCollisions; 
 
 	const float CELL_SIZE;
 

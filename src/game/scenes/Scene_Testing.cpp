@@ -1,156 +1,113 @@
 #include "Scene_Testing.h"
 
-void RenderLevelTiles(Renderer* rend);
-
 struct Scene_Testing_Data {
-	Scene_Testing_Data() : atlas(nullptr), rail(nullptr), ground(nullptr) {};
-	
-	Baby player;
+	// Scene
 	Camera camera;
-	CameraController camController;
-	Texture* atlas;
-	HitBox* rail;
-	HitBox* ground;
-	Transform t = Transform(0.0f, 0.35f, 0.5f, 0.5f, 0.0f);
-	SubTexture s = SubTexture();
-	CollisionGrid grid;
+	CameraController cameraController;
 	LevelRenderer levelRenderer;
+	CollisionGrid collisionGrid;
+
+	// Entities
+	Baby baby;
 
 	void Update(float dt) {
-		player.Update(dt);
-		camController.Update(dt);
+		baby.Update(dt);
+		cameraController.Update(dt);
 	}
+
 	void Render(Renderer* rend) {
 		rend->Start();
 		levelRenderer.Render(rend);
-		RenderLevelTiles(rend);
-		player.Render(rend);
-		//rail->Render(rend);
-		//ground->Render(rend);
-		// grid.DEBUG_RENDER(rend);
-		//camController.followBounds.Render(rend);
 		rend->End();
+
+		//collisionGrid.DEBUG_RENDER(rend);
+
 	}
+
 };
 
 // sd for "scene data", needs a short name bc its used a lot
 Scene_Testing_Data* sd = nullptr;
 
 
-void RenderLevelTiles(Renderer* rend) {
-	//Texture* t = ResourceManager::GetTexture("backdrop");
-	//rend->DrawQuad(t, glm::vec2(0.0f, 0.0f), glm::vec2(t->width / 128.0f, t->height / 128.0f));
-	// Testing background
-	//sd->TEST_BACKGROUND.Render(rend);
-
-	// Draw Ground
-	sd->t.SetPosition(0.0f, 0.35f);
-	sd->s.SetValues(sd->atlas, 0, 0, 64, 64);
-	rend->DrawQuad(sd->atlas, sd->s, sd->t.GetPosition(), sd->t.GetScale());
-	sd->t.Translate(0.5f, 0.0f);
-	sd->s.SetValues(sd->atlas, 64, 0, 64, 64);
-	rend->DrawQuad(sd->atlas, sd->s, sd->t.GetPosition(), sd->t.GetScale());
-	for (int i = 0; i < 50; i++) {
-		sd->t.Translate(0.5f, 0.0f);
-		rend->DrawQuad(sd->atlas, sd->s, sd->t.GetPosition(), sd->t.GetScale());
-	}
-	sd->t.Translate(0.5f, 0.0f);
-	sd->s.SetValues(sd->atlas, 128, 0, 64, 64);
-	rend->DrawQuad(sd->atlas, sd->s, sd->t.GetPosition(), sd->t.GetScale());
-
-	// Draw Rail
-	sd->t.SetPosition(2.0, 0.25);
-	sd->s.SetValues(sd->atlas, 0, 128, 64, 64);
-	rend->DrawQuad(sd->atlas, sd->s, sd->t.GetPosition(), sd->t.GetScale());
-	sd->s.SetValues(sd->atlas, 64, 128, 64, 64);
-	for (int i = 0; i < 20; i++) {
-		sd->t.Translate(0.5f, 0.0f);
-		rend->DrawQuad(sd->atlas, sd->s, sd->t.GetPosition(), sd->t.GetScale());
-	}
-	sd->t.Translate(0.5f, 0.0f);
-	sd->s.SetValues(sd->atlas, 2 * 64, 128, 64, 64);
-	rend->DrawQuad(sd->atlas, sd->s, sd->t.GetPosition(), sd->t.GetScale());
-
-}
-
 void Load_Testing(){
-	sd = new Scene_Testing_Data();
-
+	// Load resources
 	ResourceManager::LoadTexture("res/textures/Baby.png", "baby");
-	ResourceManager::LoadTexture("res/textures/Grid.png", "testgrid", false);
-	ResourceManager::LoadTexture("res/textures/Houses.png", "houses");
-	ResourceManager::LoadTexture("res/textures/Background.png", "backdrop");
-	sd->atlas = ResourceManager::LoadTexture("res/textures/TextureAtlas.png", "atlas");
+	ResourceManager::LoadTexture("res/textures/Background.png", "background");
+	ResourceManager::LoadTexture("res/textures/Tileset.png", "tileset");
 
-	// Populate scene data
+	// Init data
+	sd = new Scene_Testing_Data();
 	new (&sd->camera) Camera(Window::width, Window::height);
-	// I do these up here so cam controller can set up automatically
-	sd->camera.transform.ScaleFactor(2.0f, 2.0f);
-	sd->camera.transform.Translate(3.3f, -1.4f);
+	new (&sd->collisionGrid) CollisionGrid(0.5f);
+	new (&sd->baby) Baby(0.0f, 1.25f, &sd->collisionGrid);
+	new (&sd->cameraController) CameraController(&sd->camera);
+	new (&sd->levelRenderer) LevelRenderer(&sd->camera, &sd->cameraController);
 
-	new (&sd->grid) CollisionGrid(0.5f);
-	new (&sd->player) Baby(0.0f, 0.0f, &sd->grid); // <-- more goated than std::move
-	new (&sd->camController) CameraController(&sd->camera);
-
-	new(&sd->levelRenderer)  LevelRenderer(&sd->camera, &sd->camController);
-
-	sd->rail = sd->grid.Register(HitBox(2.0, 2.0 + 21.0f * 0.5f, -0.125f, 0.125f, HitBoxType::GrindRail));
-	sd->ground = sd->grid.Register(HitBox(-0.25f, 51.0f*0.5f + 0.75f, 0.5f, 1.0f, HitBoxType::Ground));
-	sd->grid.ConstructGrid();
 }
 
 void Start_Testing() {
-	// Set our camera as the used one
-	Window::screenCamera = &sd->camera;
-	SceneManager::renderer.camera = &sd->camera;
+	// Set our camera as main camera
+	SceneManager::SetCamera(&sd->camera);
+	sd->camera.transform.scale = glm::vec2(2.0f, 2.0f);
 
-	sd->camController.SetFollowTarget(&sd->player.transform, -1.5f, 0.2f, -0.5f, 2.0f);
-	//sd->camController.AddParalaxTarget(&sd->TEST_BACKGROUND.rootTransform, 0.8f);
-	Texture* t = ResourceManager::GetTexture("backdrop");
-	sd->levelRenderer.AddParallaxBackground(ResourceManager::GetTexture("backdrop"), SubTexture(),
-		sd->camera.transform.position, glm::vec2(t->width / 128.0f, t->height/128.0f),  1.0f);
-	//sd->levelRenderer.AddLoopingBackground(ResourceManager::GetTexture("testgrid"), SubTexture(), 
-	//	glm::vec2(0.0f, -1.0f), glm::vec2(3.0f, 3.0f), &sd->camera, 10, &sd->camController, 0.6f);
-	Texture* houses = ResourceManager::GetTexture("houses");
-	sd->levelRenderer.AddLoopingBackground(houses, SubTexture(), glm::vec2(0.0f, -(houses->height/128.0f)/2.0f+0.5f), 5, 0.0f);
-	Texture* atlas = ResourceManager::GetTexture("atlas");
-	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 0, 64 * 4, 64 * 3, 64), glm::vec2(0, 0.11f), 20, 0.0f);
+	// Set ground collision
+	sd->collisionGrid.Register(HitBox(-0.5f, 9.25f, 1.75f, 2.0f, HitBoxType::Ground));
+	sd->collisionGrid.Register(HitBox(9.25f, 9.75f, 1.25f, 1.75f, HitBoxType::Ramp));
+	sd->collisionGrid.Register(HitBox(9.75f, 20.0f, 1.25f, 1.75f, HitBoxType::Ground));
+
+	// Set up our scene objects
+	sd->collisionGrid.ConstructGrid();
+	sd->cameraController.SetFollowTarget(&sd->baby.transform, -1.5f, 0.2f, -0.5f, 2.0f);
+
+	// -- LEVEL RENDERER --
+	float levelY = 1.25f;
+	// Easy access to tileset
+	Texture* atlas = ResourceManager::GetTexture("tileset");
+	// Backdrop
+	sd->levelRenderer.AddParallaxBackground(ResourceManager::GetTexture("background"), SubTexture(), glm::vec2(0), 1.0f);
+	// Bushes
+	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 6 * 64, 0, 2 * 64, 3 * 64), glm::vec2(0.0f, levelY - 0.1f), 10, 0.1f);
+	// Ground
+	//sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 1 * 64, 1*64, 2 * 64, 1 * 64), glm::vec2(0.0f, levelY+0.5f ), 10, 0.0f);
+	sd->levelRenderer.AddStep([=](Renderer* rend) {
+		SubTexture st = SubTexture(atlas, 1 * 64, 1 * 64, 2 * 64, 1 * 64);
+		Transform t = Transform(glm::vec2(0.0f, levelY + 0.5f), glm::vec2(1.0f, 0.5f), 0.0f);
+		for (int i = 0; i < 10; i++) {
+			rend->DrawQuad(atlas, st, t.position, t.scale);
+			t.Translate(1.0f, 0.0f);
+		}
+		t.Translate(-0.5f, -0.25f);
+		rend->DrawQuad(atlas, SubTexture(atlas, 3 * 64, 0 * 64, 1 * 64, 2 * 64), t.position, glm::vec2(0.5f, 1.0f));
+		t.Translate(0.75f, -0.25f);
+		for (int i = 0; i < 10; i++) {
+			rend->DrawQuad(atlas, st, t.position, t.scale);
+			t.Translate(1.0f, 0.0f);
+		}
+		});
+	// Baby
+	sd->levelRenderer.AddStep([](Renderer* rend) {sd->baby.Render(rend); });
+
 
 }
 
 void Update_Testing(float dt) {
+	sd->Update(dt);
+	// TODO: u should store this stuff (renderer and cam) in Scene as static vars
+	sd->Render(&SceneManager::renderer);
 
-	
-	if (InputManager::GetKey(GLFW_KEY_RIGHT)) {
-		sd->camera.transform.Translate(4.0f * dt, 0.0f);
-	}
-	if (InputManager::GetKey(GLFW_KEY_LEFT)) {
-		sd->camera.transform.Translate(-4.0f * dt, 0.0f);
-	}
-	if (InputManager::GetKey(GLFW_KEY_UP)) {
-		sd->camera.transform.Translate(0.0, -4.0f * dt);
-	}
-	if (InputManager::GetKey(GLFW_KEY_DOWN)) {
-		sd->camera.transform.Translate(0.0f, 4.0f * dt);
-	}
 	if (InputManager::GetKey(GLFW_KEY_RIGHT_SHIFT)) {
 		sd->camera.transform.Scale(-4.0f * dt, -4.0f * dt);
 	}
 	if (InputManager::GetKey(GLFW_KEY_RIGHT_CONTROL)) {
 		sd->camera.transform.Scale(4.0f * dt, 4.0f * dt);
 	}
+
 	if (InputManager::GetKeyDown(GLFW_KEY_R)) {
 		End_Testing();
 		Load_Testing();
 		Start_Testing();
 	}
-
-	
-	sd->Update(dt);
-	sd->Render(&SceneManager::renderer);
-	
-	glm::vec2 mPos = InputManager::GetWorldMousePos(Window::width, Window::height, sd->camera.right, sd->camera.transform)- sd->camera.transform.position;
-	std::cout << mPos.x << ", " << mPos.y << "\n";
 }
 
 void End_Testing() {

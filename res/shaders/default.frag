@@ -60,7 +60,9 @@ vec4 fat_pixel_sample(sampler2D tex, vec2 uv){
 }
 
 void main(){
-	vec2 tiledUV = mod((v_texCoord - v_texCoordBounds.xy)* v_tileCount, (v_texCoordBounds.zw-v_texCoordBounds.xy)) + v_texCoordBounds.xy;
+	//vec2 tiledUV = mod((v_texCoord - v_texCoordBounds.xy)* v_tileCount, (v_texCoordBounds.zw-v_texCoordBounds.xy)) + v_texCoordBounds.xy;
+	// ^This slows things WAY down, not the right solution
+	vec2 tiledUV = v_texCoord;
 	switch(int(v_texSlot)){
 		case -1: color = v_color; break;
 		case 0: color = fat_pixel_sample(textures[0], tiledUV) * v_color; break;
@@ -81,6 +83,7 @@ void main(){
 		case 15: color = fat_pixel_sample(textures[15], tiledUV) * v_color; break;
 	};
 
-	color.rgb *= color.a;
+	//color.rgb *= color.a;
+	// ^ this makes the black border come back lol
 
 }

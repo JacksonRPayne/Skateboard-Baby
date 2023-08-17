@@ -2,17 +2,18 @@
 
 HitBox::HitBox()
 : localTransform(), parentEntity(nullptr), parentTransform(nullptr), 
-	collisionCallback(nullptr), tag(HitBoxType::None), active(true){}
+	collisionCallback(nullptr), collisionExitCallback(nullptr), tag(HitBoxType::None), active(true){}
 
 HitBox::HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent,
-	void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag)
-	: localTransform(xPos, yPos, xScale, yScale, 0.0f), parentEntity(parent), collisionCallback(callback),
-	tag(tag), parentTransform(nullptr) {
+	void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox), 
+	void(*exitCallback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag)
+	: localTransform(xPos, yPos, xScale, yScale, 0.0f), parentEntity(parent), collisionCallback(callback), 
+	collisionExitCallback(exitCallback), tag(tag), parentTransform(nullptr) {
 }
 
 HitBox::HitBox(float leftBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag)
 	: localTransform((rightBound - leftBound) / 2.0f + leftBound, (lowerBound - upperBound) / 2.0f + upperBound, (rightBound - leftBound), (lowerBound - upperBound), 0.0f),
-	parentEntity(nullptr), parentTransform(nullptr), collisionCallback(nullptr), tag(tag){
+	parentEntity(nullptr), parentTransform(nullptr), collisionCallback(nullptr), collisionExitCallback(nullptr), tag(tag){
 }
 
 bool HitBox::CheckCollision(const HitBox& other) {
@@ -51,8 +52,8 @@ glm::vec2 HitBox::GetGlobalPosition() const{
 }
 
 void HitBox::Render(Renderer* renderer) {
-	renderer->DrawLine(TopLeft(), TopRight());
-	renderer->DrawLine(TopRight(), BottomRight());
-	renderer->DrawLine(BottomRight(), BottomLeft());
-	renderer->DrawLine(BottomLeft(), TopLeft());
+	renderer->DrawLine(TopLeft(), TopRight(), 8.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	renderer->DrawLine(TopRight(), BottomRight(), 8.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	renderer->DrawLine(BottomRight(), BottomLeft(), 8.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	renderer->DrawLine(BottomLeft(), TopLeft(), 8.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 }

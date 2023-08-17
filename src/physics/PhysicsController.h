@@ -25,6 +25,8 @@ public:
 
 	glm::vec2 velocity;
 	glm::vec2 acceleration;
+	// Multiplies movement by this
+	glm::vec2 multiplier = glm::vec2(1.0f,1.0f);
 	// Dynamic hitboxes to be updated in grid
 	std::vector<int> hitboxes;
 	CollisionGrid* grid;

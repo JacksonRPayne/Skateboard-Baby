@@ -36,6 +36,9 @@ Animation Baby::jumpDescend;
 void OnBodyCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 
 }
+void OnBodyCollisionExit (const HitBox& thisHitBox, const HitBox& otherHitBox) {
+
+}
 
 void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	if (otherHitBox.tag == HitBoxType::Ground) { 
@@ -43,11 +46,26 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 		float yDiff = otherHitBox.TopBound() - thisHitBox.BottomBound();
 		// Move baby out of ground
 		baby->physicsController.Translate(0.0f, yDiff);
+
 		// Set ground state
 		baby->physicsController.velocity.y = 0;
-		baby->physicsController.acceleration.y = 0;
+		//baby->physicsController.acceleration.y = 0;
 		baby->grounded = true;
 		baby->balance = 0.0f;
+		baby->physicsController.multiplier.x = 1;
+	}
+	else if (otherHitBox.tag == HitBoxType::Ramp) {
+		float xDiff = thisHitBox.RightBound() - otherHitBox.LeftBound();
+		float yDiff = thisHitBox.BottomBound()-otherHitBox.BottomBound() + xDiff;
+		if (yDiff < 0) return;
+		Baby* baby = (Baby*)thisHitBox.parentEntity;
+		baby->physicsController.Translate(0.0f, -yDiff);
+		// Set ground state
+		baby->physicsController.velocity.y = 0;
+		//baby->physicsController.acceleration.y = 0;
+		baby->grounded = true;
+		baby->balance = 0.0f;
+		baby->physicsController.multiplier.x = 1 / sqrt(2);
 	}
 	else if (otherHitBox.tag == HitBoxType::GrindRail) {
 		((Baby*)thisHitBox.parentEntity)->touchingRail = true;
@@ -56,8 +74,21 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	}
 }
 
+void OnBoardCollisionExit(const HitBox& thisHitBox, const HitBox& otherHitBox) {
+	if (otherHitBox.tag == HitBoxType::Ramp) {
+		Baby* baby = (Baby*)thisHitBox.parentEntity;
+		baby->physicsController.multiplier.x = 1;
+		std::cout << "EXIT" << '\n';
+	}
+	if (otherHitBox.tag == HitBoxType::Ground) {
+		Baby* baby = (Baby*)thisHitBox.parentEntity;
+		//baby->state = BabyState::Air;
+	}
+}
+
+
 Baby::Baby(float xPos, float yPos, CollisionGrid* grid, const std::string name, float xScale, float yScale, float rotation)
-	: Entity(xPos, yPos, xScale, yScale, rotation, name), physicsController(&transform, grid), state(BabyState::Ground),
+	: Entity(xPos, yPos, xScale, yScale, rotation, name), physicsController(&transform, grid), state(BabyState::Air),
 	direction(1.0f), nextJumpVel(MIN_JUMP_VEL){
 
 	texture = ResourceManager::GetTexture("baby");
@@ -65,8 +96,8 @@ Baby::Baby(float xPos, float yPos, CollisionGrid* grid, const std::string name, 
 	indicatorSubTex = SubTexture(texture, 1 * 128, 4 * 128 + 40+64, 128, 64);
 	InitializeAnimations();
 	// Initialize hitboxes
-	bodyHitBox = grid->Register(HitBox(0.0f, 0.0f, 0.45f, 0.8f, this, OnBodyCollision));
-	boardHitBox = grid->Register(HitBox(0.0f, 0.4f, 0.6f, 0.2f, this, OnBoardCollision));
+	bodyHitBox = grid->Register(HitBox(0.0f, 0.0f, 0.45f, 0.8f, this, OnBodyCollision, OnBodyCollisionExit));
+	boardHitBox = grid->Register(HitBox(0.0f, 0.4f, 0.5f, 0.2f, this, OnBoardCollision, OnBoardCollisionExit));
 	physicsController.hitboxes.push_back(bodyHitBox->id);
 	physicsController.hitboxes.push_back(boardHitBox->id);
 }
@@ -181,6 +212,8 @@ void Baby::ActivateJumpState() {
 }
 
 void Baby::GroundedUpdate(float dt) {
+	physicsController.acceleration.y = FASTFALLSPEED;
+
 	// Gets directional input
 	float inputDir = InputDirection();
 	if (inputDir && !InputCrouch()) {
@@ -232,6 +265,7 @@ void Baby::GroundedUpdate(float dt) {
 		bodyHitBox->localTransform.SetPositionY(0.0f);
 		ActivateJumpState();
 	}
+
 }
 
 void Baby::AirUpdate(float dt) {
