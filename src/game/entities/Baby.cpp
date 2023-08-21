@@ -55,9 +55,13 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 		baby->physicsController.multiplier.x = 1;
 	}
 	else if (otherHitBox.tag == HitBoxType::Ramp) {
+		// Uses x difference to calculate y difference (45 degree angle)
 		float xDiff = thisHitBox.RightBound() - otherHitBox.LeftBound();
+		// Prevents popping up at the top
+		xDiff = std::min(xDiff, otherHitBox.localTransform.scale.x);
 		float yDiff = thisHitBox.BottomBound()-otherHitBox.BottomBound() + xDiff;
-		if (yDiff < 0) return;
+		//sif (yDiff < 0) return;
+
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
 		baby->physicsController.Translate(0.0f, -yDiff);
 		// Set ground state
@@ -78,7 +82,6 @@ void OnBoardCollisionExit(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	if (otherHitBox.tag == HitBoxType::Ramp) {
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
 		baby->physicsController.multiplier.x = 1;
-		std::cout << "EXIT" << '\n';
 	}
 	if (otherHitBox.tag == HitBoxType::Ground) {
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
