@@ -60,7 +60,7 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 		// Prevents popping up at the top
 		xDiff = std::min(xDiff, otherHitBox.localTransform.scale.x);
 		float yDiff = thisHitBox.BottomBound()-otherHitBox.BottomBound() + xDiff;
-		//sif (yDiff < 0) return;
+		//if (yDiff < 0) return;
 
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
 		baby->physicsController.Translate(0.0f, -yDiff);

@@ -23,6 +23,9 @@ struct HitBox
 
 	// Checks collision with another hitbox and calls parent entity callback
 	// TODO: idea: give ability to pass custom collision detection function as fptr. Would be good for things like ramps
+	// TODO: ok. what were gonna do is this: two custom functions: one is a custom collision check that way it can be
+	// for different shapes, and second is a custom collision resolver that returns a vec2 translation to be applied
+	// to the transform in order to resolve the collision. This way it will make some goddamn sense
 	bool CheckCollision(const HitBox& other);
 	// Checks if hitbox contains point
 	bool Contains(glm::vec2 point);
