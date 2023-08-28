@@ -4,7 +4,7 @@
 #define MAX_GROUND_VELOCITY 4.0f
 #define GROUND_ACCELERATION 3.0f
 #define GROUND_FRICTION 1.0f
-#define MAX_RAMP_POP 4.0f
+#define MAX_RAMP_POP 3.0f
 #define RAMP_FALLSPEED 3.0f
 
 // Jump/air constants
@@ -37,6 +37,7 @@ Animation Baby::jumpAscend;
 Animation Baby::jumpDescend;
 
 
+// ---------------- COLLISION CALLBACKS ----------------
 
 void OnBodyCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 
@@ -59,7 +60,7 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 		baby->balance = 0.0f;
 		baby->physicsController.multiplier.x = 1;
 
-		baby->onRamp = false;
+		//baby->onRamp = false;
 
 	}
 	else if (otherHitBox.tag == HitBoxType::Ramp) {
@@ -110,6 +111,10 @@ void OnBoardCollisionExit(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	}
 }
 
+
+
+
+// ---------------- CONSTRUCTOR/INITIALIZATION ----------------
 
 Baby::Baby(float xPos, float yPos, CollisionGrid* grid, const std::string name, float xScale, float yScale, float rotation)
 	: Entity(xPos, yPos, xScale, yScale, rotation, name), physicsController(&transform, grid), state(BabyState::Air),
@@ -181,6 +186,10 @@ void Baby::InitializeAnimations() {
 }
 
 
+
+
+// ---------------- UPDATE/RENDER ----------------
+
 void Baby::Render(Renderer* renderer) {
 	if (generateSparks) {
 		float intensity = physicsController.XSpeed() / GRIND_MAX_SPEED;
@@ -201,7 +210,6 @@ void Baby::Render(Renderer* renderer) {
 }
 
 void Baby::Update(float dt) {
-	grounded = false;
 
 	// Collision checks (duh)
 	CollisionGrid::currentGrid->CheckCollision(bodyHitBox);
@@ -236,6 +244,11 @@ void Baby::Update(float dt) {
 	// Assumes collision checks are done before update (duh theyre right up there)
 	touchingRail = false;
 }
+
+
+
+
+// ---------------- STATE DEPENDENT UPDATE LOOPS ----------------
 
 void Baby::ActivateJumpState() {
 	// Add velocity and restore velocity variable to its minimum
@@ -307,6 +320,11 @@ void Baby::GroundedUpdate(float dt) {
 		bodyHitBox->localTransform.SetScaleY(0.8f);
 		bodyHitBox->localTransform.SetPositionY(0.0f);
 		ActivateJumpState();
+	}
+	// Popping off a ramp
+	else if (physicsController.velocity.y < 0.0f && !onRamp) {
+		grounded = false;
+		state = BabyState::Air;
 	}
 
 }
@@ -417,6 +435,10 @@ void Baby::RenderBalanceMeter(Renderer* renderer) {
 	renderer->DrawQuad(texture, indicatorSubTex,
 		glm::vec2(transform.position.x, transform.TopBound() - METER_HEIGHT) + indicatorPos, glm::vec2(1.0f, 0.5f));
 }
+
+
+
+// ---------------- INPUT ----------------
 
 float Baby::InputDirection() {
 	// If there is keyboard input
