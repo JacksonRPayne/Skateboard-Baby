@@ -12,29 +12,39 @@ enum class HitBoxType {
 	Ramp = 4
 };
 
+
 struct HitBox
 {
-	// --Basic Functions--
+	// -- Constructors --
 	HitBox();
 	HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent,
 		void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox),  
 		void(*exitCallback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag=HitBoxType::None);
 	HitBox(float leftBound, float rightBound, float upperBound, float lowerBound, HitBoxType tag = HitBoxType::None);
 
-	// Checks collision with another hitbox and calls parent entity callback
-	// TODO: idea: give ability to pass custom collision detection function as fptr. Would be good for things like ramps
-	// TODO: ok. what were gonna do is this: two custom functions: one is a custom collision check that way it can be
-	// for different shapes, and second is a custom collision resolver that returns a vec2 translation to be applied
-	// to the transform in order to resolve the collision. This way it will make some goddamn sense
+	// -- Static functions --
+	// Check collision for different shapes
+	static bool BoxCollisionCheck(const HitBox& thisHitBox, const HitBox& otherHitBox);
+	static bool UpRampCollisionCheck(const HitBox& thisHitBox, const HitBox& otherHitBox);
+	// Resolves collisions for different shapes
+	static glm::vec2 ResolveBoxX(const HitBox& thisHitBox, const HitBox& otherHitBox);
+	static glm::vec2 ResolveUpRampX(const HitBox& thisHitBox, const HitBox& otherHitBox);
+	static glm::vec2 ResolveUpRampY(const HitBox& thisHitBox, const HitBox& otherHitBox);
+
+	// --Basic Functions--
+	// Defines collision checking behavior (is this a box or a ramp?)
+	bool(*collisionCheck)(const HitBox& thisHitBox, const HitBox& otherHitBox) = BoxCollisionCheck;
+	// Checks collision with another hitbox using collision check logic specified and calls parent entity callback
 	bool CheckCollision(const HitBox& other);
 	// Checks if hitbox contains point
 	bool Contains(glm::vec2 point);
-	// Renders outline of hitbox (DEBUGGING ONLY, performs TERRIBLY so NEVER call outside debuggin purposes)
+	// (DEBUGGING ONLY, performs TERRIBLY so NEVER call outside debuggin purposes)
 	void Render(Renderer* renderer);
 
 	// Gets the position in relation to the world
 	glm::vec2 GetGlobalPosition() const;
-	
+
+
 	// --Variables--
 	bool active = true;
 	int id = -1;

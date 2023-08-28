@@ -11,6 +11,8 @@
 #define JUMP_X_VEL 0.5f
 #define FALLSPEED 6.0f
 #define FASTFALLSPEED 13.0f
+#define IN_AIR_THRESHOLD 0.1f
+
 // Rail constants
 #define GRIND_BONUS_SPEED 0.5f
 #define GRIND_MAX_SPEED 5.5f
@@ -43,49 +45,57 @@ void OnBodyCollisionExit (const HitBox& thisHitBox, const HitBox& otherHitBox) {
 void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	if (otherHitBox.tag == HitBoxType::Ground) { 
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
+
 		float yDiff = otherHitBox.TopBound() - thisHitBox.BottomBound();
 		// Move baby out of ground
 		baby->physicsController.Translate(0.0f, yDiff);
 
 		// Set ground state
 		baby->physicsController.velocity.y = 0;
-		//baby->physicsController.acceleration.y = 0;
 		baby->grounded = true;
 		baby->balance = 0.0f;
 		baby->physicsController.multiplier.x = 1;
+
 	}
 	else if (otherHitBox.tag == HitBoxType::Ramp) {
-		// Uses x difference to calculate y difference (45 degree angle)
-		float xDiff = thisHitBox.RightBound() - otherHitBox.LeftBound();
-		// Prevents popping up at the top
-		xDiff = std::min(xDiff, otherHitBox.localTransform.scale.x);
-		float yDiff = thisHitBox.BottomBound()-otherHitBox.BottomBound() + xDiff;
-		//if (yDiff < 0) return;
+
+		// So the rotation (collision exit) can be triggered by the box hitbox but the physics is the true ramp hitbox
+		if (!HitBox::UpRampCollisionCheck(thisHitBox, otherHitBox)) return;
 
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
-		baby->physicsController.Translate(0.0f, -yDiff);
+		
+		// If baby is moving side to side on ramp
+		if (baby->physicsController.XSpeed() > baby->physicsController.YSpeed()) {
+			baby->physicsController.Translate(HitBox::ResolveUpRampY(thisHitBox, otherHitBox));
+			// Provides "pop" of ramp
+			baby->physicsController.velocity.y = std::max(-JUMP_VEL-1.0f, baby->physicsController.velocity.y - baby->physicsController.velocity.x);
+		}
+		// Baby is simply sliding down ramp
+		else {
+			baby->physicsController.Translate(HitBox::ResolveUpRampX(thisHitBox, otherHitBox));
+		}
+
 		// Set ground state
-		baby->physicsController.velocity.y = 0;
-		//baby->physicsController.acceleration.y = 0;
 		baby->grounded = true;
 		baby->balance = 0.0f;
-		baby->physicsController.multiplier.x = 1 / sqrt(2);
+		// For rotation on ramp
+		baby->onRamp = true;
+
 	}
 	else if (otherHitBox.tag == HitBoxType::GrindRail) {
 		((Baby*)thisHitBox.parentEntity)->touchingRail = true;
 		((Baby*)thisHitBox.parentEntity)->railY = otherHitBox.BottomBound();
-
 	}
 }
 
 void OnBoardCollisionExit(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	if (otherHitBox.tag == HitBoxType::Ramp) {
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
-		baby->physicsController.multiplier.x = 1;
+		baby->onRamp = false;
+		baby->state = BabyState::Air;
 	}
 	if (otherHitBox.tag == HitBoxType::Ground) {
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
-		//baby->state = BabyState::Air;
 	}
 }
 
@@ -166,17 +176,27 @@ void Baby::Render(Renderer* renderer) {
 		glm::vec2 pos = glm::vec2(-(transform.scale.x / 4.0f), transform.scale.y / 2.0f - boardHitBox->localTransform.scale.y / 2.0f);
 		sparks.GenerateSparks(transform.position + pos, direction, renderer, intensity);
 	}
-	renderer->DrawQuad(texture, subTexture, transform.position, transform.scale);
+	// Rotate baby if on ramp (slightly more expensive to render)
+	if (onRamp) {
+		transform.rotation = -45.0f;
+		renderer->DrawQuad(texture, subTexture, transform.GetModelMatrix());
+	}
+	else renderer->DrawQuad(texture, subTexture, transform.position, transform.scale);
+
+
 	if(balancing) RenderBalanceMeter(renderer);
 	//bodyHitBox->Render(renderer);
 	//boardHitBox->Render(renderer);
 }
 
 void Baby::Update(float dt) {
+	grounded = false;
+
 	// Collision checks (duh)
 	CollisionGrid::currentGrid->CheckCollision(bodyHitBox);
 	CollisionGrid::currentGrid->CheckCollision(boardHitBox);
 
+	// Different update functions based on current state
 	switch (state)
 	{
 	case BabyState::Ground:
@@ -208,6 +228,7 @@ void Baby::ActivateJumpState() {
 	// Set custom x vel and stop any deceleration
 	physicsController.acceleration.x = 0;
 	physicsController.velocity.x += JUMP_X_VEL * direction;
+	// Clamp speed to make sure it wasn't boosted above max speed
 	if (physicsController.XSpeed() > GRIND_MAX_SPEED)
 		physicsController.velocity.x = GRIND_MAX_SPEED * physicsController.XVelDirection();
 	state = BabyState::Air;
@@ -215,7 +236,10 @@ void Baby::ActivateJumpState() {
 }
 
 void Baby::GroundedUpdate(float dt) {
-	physicsController.acceleration.y = FASTFALLSPEED;
+	
+	// Diff speeds for falling down ramp than falling off platform
+	if(onRamp)	physicsController.acceleration.y = FALLSPEED;
+	else physicsController.acceleration.y = FASTFALLSPEED;
 
 	// Gets directional input
 	float inputDir = InputDirection();
@@ -269,9 +293,11 @@ void Baby::GroundedUpdate(float dt) {
 		ActivateJumpState();
 	}
 
+	if (!grounded) state = BabyState::Air;
 }
 
 void Baby::AirUpdate(float dt) {
+
 	// Grind
 	if (touchingRail && InputGrind()) {
 		// Find new velocity with correct sign

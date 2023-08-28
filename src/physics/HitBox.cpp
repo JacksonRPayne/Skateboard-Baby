@@ -17,21 +17,15 @@ HitBox::HitBox(float leftBound, float rightBound, float upperBound, float lowerB
 }
 
 bool HitBox::CheckCollision(const HitBox& other) {
+	// Checks edge cases
 	if (this == &other) return false;
-	if (!active || !other.active) return false;
-	glm::vec2 otherPos = other.GetGlobalPosition();
-	glm::vec2 pos = GetGlobalPosition();
-	// Stores half size for easier border calculation
-	glm::vec2 otherSize = 0.5f * other.localTransform.GetScale();
-	glm::vec2 size = 0.5f * localTransform.GetScale();
-
-	bool collision = (pos.x + size.x > otherPos.x - otherSize.x) &&
-					 (pos.x - size.x < otherPos.x + otherSize.x) &&
-					 (pos.y + size.y > otherPos.y - otherSize.y) &&
-					 (pos.y - size.y < otherPos.y + otherSize.y);
+	if (!this->active || !other.active) return false;
+	
+	// Here its assumed that it's only ever a box checking collision, and only what its checking against might be different
+	bool collision = other.collisionCheck(*this, other);
 	
 	if (collision) {
-		if(collisionCallback) (*collisionCallback)(*this, other);
+		if (collisionCallback) (*collisionCallback)(*this, other);
 	}
 
 	return collision;
@@ -56,4 +50,50 @@ void HitBox::Render(Renderer* renderer) {
 	renderer->DrawLine(TopRight(), BottomRight(), 8.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	renderer->DrawLine(BottomRight(), BottomLeft(), 8.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	renderer->DrawLine(BottomLeft(), TopLeft(), 8.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+}
+
+
+bool HitBox::BoxCollisionCheck(const HitBox& thisHitBox, const HitBox& otherHitBox) {
+
+	// Stores positions
+	glm::vec2 otherPos = otherHitBox.GetGlobalPosition();
+	glm::vec2 pos = thisHitBox.GetGlobalPosition();
+	// Stores half size for easier border calculation
+	glm::vec2 otherSize = 0.5f * otherHitBox.localTransform.GetScale();
+	glm::vec2 size = 0.5f * thisHitBox.localTransform.GetScale();
+
+	bool collision = (pos.x + size.x > otherPos.x - otherSize.x) &&
+		(pos.x - size.x < otherPos.x + otherSize.x) &&
+		(pos.y + size.y > otherPos.y - otherSize.y) &&
+		(pos.y - size.y < otherPos.y + otherSize.y);
+
+	return collision;
+}
+
+bool HitBox::UpRampCollisionCheck(const HitBox& thisHitBox, const HitBox& otherHitBox) {
+	float xDiff = thisHitBox.BottomRight().x - otherHitBox.LeftBound();
+	float yDiff = thisHitBox.BottomRight().y - otherHitBox.TopBound();
+
+	// It makes sense... draw diagram
+	// Using width here but its assumed that the collision box is a square and the ramp runs its diagonal
+	return BoxCollisionCheck(thisHitBox, otherHitBox) && (xDiff + yDiff) > (otherHitBox.localTransform.scale.x);
+}
+
+glm::vec2 HitBox::ResolveUpRampX(const HitBox& thisHitBox, const HitBox& otherHitBox) {
+	// min prevents popping at the top
+	float xDiff = std::min(thisHitBox.BottomRight().x - otherHitBox.LeftBound(), otherHitBox.localTransform.scale.x);
+	float yDiff = std::min(thisHitBox.BottomRight().y - otherHitBox.TopBound(), otherHitBox.localTransform.scale.y);
+
+	float diff = xDiff + yDiff;
+
+	return glm::vec2(otherHitBox.localTransform.scale.x - diff, 0.0f);
+}
+
+glm::vec2 HitBox::ResolveUpRampY(const HitBox& thisHitBox, const HitBox& otherHitBox) {
+	float xDiff = std::min(thisHitBox.BottomRight().x - otherHitBox.LeftBound(), otherHitBox.localTransform.scale.x);
+	float yDiff = std::min(thisHitBox.BottomRight().y - otherHitBox.TopBound(), otherHitBox.localTransform.scale.y);
+
+	float diff = xDiff + yDiff;
+
+	return glm::vec2(0.0f, otherHitBox.localTransform.scale.x - diff);
 }

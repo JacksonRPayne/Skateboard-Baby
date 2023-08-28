@@ -47,6 +47,8 @@ public:
 	float balance = 0.0f; // -1/1 == fall
 	// For jump charging
 	float nextJumpVel;
+	
+	bool onRamp = false;
 
 private:
 	// Update for different states
