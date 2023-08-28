@@ -4,6 +4,9 @@
 #define MAX_GROUND_VELOCITY 4.0f
 #define GROUND_ACCELERATION 3.0f
 #define GROUND_FRICTION 1.0f
+#define MAX_RAMP_POP 4.0f
+#define RAMP_FALLSPEED 3.0f
+
 // Jump/air constants
 #define MIN_JUMP_VEL 1.0f
 #define JUMP_VEL 3.0f
@@ -45,7 +48,7 @@ void OnBodyCollisionExit (const HitBox& thisHitBox, const HitBox& otherHitBox) {
 void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	if (otherHitBox.tag == HitBoxType::Ground) { 
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
-
+		
 		float yDiff = otherHitBox.TopBound() - thisHitBox.BottomBound();
 		// Move baby out of ground
 		baby->physicsController.Translate(0.0f, yDiff);
@@ -55,6 +58,8 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 		baby->grounded = true;
 		baby->balance = 0.0f;
 		baby->physicsController.multiplier.x = 1;
+
+		baby->onRamp = false;
 
 	}
 	else if (otherHitBox.tag == HitBoxType::Ramp) {
@@ -67,8 +72,15 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 		// If baby is moving side to side on ramp
 		if (baby->physicsController.XSpeed() > baby->physicsController.YSpeed()) {
 			baby->physicsController.Translate(HitBox::ResolveUpRampY(thisHitBox, otherHitBox));
+
+			// This is genius. Make max y vel thrust from ramp be proportional to how far along u are on the ramp
+			// That way it only pops at the end and the ride up the ramp is mostly smooth
+			// If this doesn't work for long ramps, you could change the underlying function from being linear
+			float xDiff = std::min(thisHitBox.BottomRight().x - otherHitBox.LeftBound(), otherHitBox.localTransform.scale.x);
+			float maxPop = std::min((xDiff / otherHitBox.localTransform.scale.x) * -MAX_RAMP_POP, 0.0f);
+
 			// Provides "pop" of ramp
-			baby->physicsController.velocity.y = std::max(-JUMP_VEL-1.0f, baby->physicsController.velocity.y - baby->physicsController.velocity.x);
+			baby->physicsController.velocity.y = std::max(maxPop, baby->physicsController.velocity.y - baby->physicsController.velocity.x);
 		}
 		// Baby is simply sliding down ramp
 		else {
@@ -92,7 +104,6 @@ void OnBoardCollisionExit(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	if (otherHitBox.tag == HitBoxType::Ramp) {
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
 		baby->onRamp = false;
-		baby->state = BabyState::Air;
 	}
 	if (otherHitBox.tag == HitBoxType::Ground) {
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
@@ -196,6 +207,11 @@ void Baby::Update(float dt) {
 	CollisionGrid::currentGrid->CheckCollision(bodyHitBox);
 	CollisionGrid::currentGrid->CheckCollision(boardHitBox);
 
+	if (physicsController.velocity.y > IN_AIR_THRESHOLD && !onRamp) {
+		state = BabyState::Air;
+		grounded = false;
+	}
+
 	// Different update functions based on current state
 	switch (state)
 	{
@@ -238,7 +254,7 @@ void Baby::ActivateJumpState() {
 void Baby::GroundedUpdate(float dt) {
 	
 	// Diff speeds for falling down ramp than falling off platform
-	if(onRamp)	physicsController.acceleration.y = FALLSPEED;
+	if(onRamp)	physicsController.acceleration.y = RAMP_FALLSPEED;
 	else physicsController.acceleration.y = FASTFALLSPEED;
 
 	// Gets directional input
@@ -293,7 +309,6 @@ void Baby::GroundedUpdate(float dt) {
 		ActivateJumpState();
 	}
 
-	if (!grounded) state = BabyState::Air;
 }
 
 void Baby::AirUpdate(float dt) {

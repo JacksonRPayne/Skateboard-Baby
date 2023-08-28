@@ -20,7 +20,7 @@ struct Scene_Testing_Data {
 		levelRenderer.Render(rend);
 		rend->End();
 
-		collisionGrid.DEBUG_RENDER(rend);
+		//collisionGrid.DEBUG_RENDER(rend);
 
 	}
 
