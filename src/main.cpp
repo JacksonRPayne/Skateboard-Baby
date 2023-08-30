@@ -24,8 +24,6 @@
 // -- Ideally, I could have one spatial data structure to use for rendering and collision
 // -- Another note: maybe implement the tiling outlined in the comments of default.frag
 // 
-// Ramps
-// -- Create ramps and add ability to have custom intersection function with a funcptr
 // 
 // Manual (skate trick)
 // -- Figure out how exactly a manual input should be defined

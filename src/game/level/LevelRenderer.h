@@ -6,7 +6,7 @@
 #include "scene/Camera.h"
 #include "graphics/Texture.h"
 #include "graphics/Renderer.h"
-#include "game/CameraController.h"
+#include "game/level/CameraController.h"
 
 
 // Functional approach to rendering a level, sort of like turtle graphics

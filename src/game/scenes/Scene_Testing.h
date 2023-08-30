@@ -5,8 +5,9 @@
 #include "graphics/Transform.h"
 #include "scene/SceneManager.h"
 #include "physics/CollisionGrid.h"
-#include "game/CameraController.h"
-#include "game/LevelRenderer.h"
+#include "game/level/CameraController.h"
+#include "game/level/LevelRenderer.h"
+#include "game/level/LevelBuilder.h"
 
 void Load_Testing();
 void Start_Testing();

@@ -37,6 +37,7 @@ public:
 	
 	// ----State variables----
 	BabyState state;
+	// If currently colliding with a ground hitbox
 	bool grounded = false;
 	// For facing direction not moving direction
 	float direction;

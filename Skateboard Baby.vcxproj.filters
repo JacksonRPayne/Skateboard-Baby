@@ -87,13 +87,16 @@
     <ClCompile Include="src\game\Sparks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\CameraController.cpp">
+    <ClCompile Include="src\game\level\CameraController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\LevelRenderer.cpp">
+    <ClCompile Include="src\game\level\LevelRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\game\scenes\Playground_1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game\level\LevelBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1877,13 +1880,16 @@
     <ClInclude Include="src\game\Sparks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\game\CameraController.h">
+    <ClInclude Include="src\game\level\CameraController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\game\LevelRenderer.h">
+    <ClInclude Include="src\game\level\LevelRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\game\scenes\Playground_1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game\level\LevelBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

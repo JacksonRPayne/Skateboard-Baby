@@ -1,8 +1,8 @@
 #pragma once
 #include "game/entities/Baby.h"
-#include "game/CameraController.h"
+#include "game/level/CameraController.h"
 #include "physics/CollisionGrid.h"
-#include "game/LevelRenderer.h"
+#include "game/level/LevelRenderer.h"
 #include "scene/SceneManager.h"
 
 void Load_Playground_1();

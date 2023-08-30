@@ -228,7 +228,6 @@ void Baby::Update(float dt) {
 	// Assumes collision checks are done before update (duh theyre right up there)
 	touchingRail = false;
 
-	std::cout << physicsController.velocity.y << '\n';
 }
 
 void Baby::Render(Renderer* renderer) {
@@ -238,7 +237,7 @@ void Baby::Render(Renderer* renderer) {
 		sparks.GenerateSparks(transform.position + pos, direction, renderer, intensity);
 	}
 	// Rotate baby if moving on ramp (slightly more expensive to render)
-	if (onRamp && physicsController.YSpeed() > IN_AIR_THRESHOLD && !grounded) {
+	if (onRamp && !grounded) {
 		transform.rotation = -45.0f;
 		renderer->DrawQuad(texture, subTexture, transform.GetModelMatrix());
 	}
@@ -325,8 +324,9 @@ void Baby::GroundedUpdate(float dt) {
 		bodyHitBox->localTransform.SetPositionY(0.0f);
 		ActivateJumpState();
 	}
+	
 	// Popping off a ramp
-	else if (physicsController.velocity.y < 0.0f && !onRamp) {
+	if (physicsController.velocity.y < 0.0f && !onRamp) {
 		state = BabyState::Air;
 	}
 

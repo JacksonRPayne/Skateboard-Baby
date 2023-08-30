@@ -136,8 +136,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\game\CameraController.cpp" />
-    <ClCompile Include="src\game\LevelRenderer.cpp" />
+    <ClCompile Include="src\game\level\LevelBuilder.cpp" />
+    <ClCompile Include="src\game\level\CameraController.cpp" />
+    <ClCompile Include="src\game\level\LevelRenderer.cpp" />
     <ClCompile Include="src\game\scenes\Playground_1.cpp" />
     <ClCompile Include="src\game\scenes\Scene_Testing.cpp" />
     <ClCompile Include="src\animation\Animation.cpp" />
@@ -165,12 +166,13 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\game\CameraController.h" />
+    <ClInclude Include="src\game\level\LevelBuilder.h" />
+    <ClInclude Include="src\game\level\CameraController.h" />
     <ClInclude Include="dependencies\glad\glad.h" />
     <ClInclude Include="dependencies\GLFW\include\GLFW\glfw3.h" />
     <ClInclude Include="dependencies\GLFW\include\GLFW\glfw3native.h" />
     <ClInclude Include="dependencies\KHR\khrplatform.h" />
-    <ClInclude Include="src\game\LevelRenderer.h" />
+    <ClInclude Include="src\game\level\LevelRenderer.h" />
     <ClInclude Include="src\game\scenes\Playground_1.h" />
     <ClInclude Include="src\game\scenes\Scene_Testing.h" />
     <ClInclude Include="src\animation\Animation.h" />

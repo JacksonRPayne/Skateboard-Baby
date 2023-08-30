@@ -6,7 +6,10 @@ CollisionGrid::CollisionGrid(float cellSize)
 	: CELL_SIZE(cellSize), hitboxes(){
 
 	cells = nullptr;
-	hitboxes.reserve(10);
+	// ---------------------- HEY DUMMY ----------------------------------------
+	// ---------------- IF YOU CANT FIND THE BUG ITS BC THE VECTOR IS TOO SMALL ---------------------------------
+	// =============== SWITCH TO LIST DUMMY ====================================================================
+	hitboxes.reserve(40);
 	currentGrid = this;
 	lastCollisions = nullptr;
 	currLastCollisions = nullptr;
@@ -237,4 +240,5 @@ void CollisionGrid::DEBUG_RENDER(Renderer* renderer) {
 
 CollisionGrid::~CollisionGrid() {
 	delete[] lastCollisions;
+	delete[] currLastCollisions;
 }

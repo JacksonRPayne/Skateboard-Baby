@@ -5,6 +5,7 @@ struct Scene_Testing_Data {
 	Camera camera;
 	CameraController cameraController;
 	LevelRenderer levelRenderer;
+	LevelBuilder levelBuilder;
 	CollisionGrid collisionGrid;
 
 	// Entities
@@ -43,7 +44,7 @@ void Load_Testing(){
 	new (&sd->baby) Baby(0.0f, 1.25f, &sd->collisionGrid);
 	new (&sd->cameraController) CameraController(&sd->camera);
 	new (&sd->levelRenderer) LevelRenderer(&sd->camera, &sd->cameraController);
-
+	new (&sd->levelBuilder) LevelBuilder(glm::vec2(0.0f, 1.95f), &sd->levelRenderer, &sd->collisionGrid, ResourceManager::GetTexture("tileset"));
 }
 
 void Start_Testing() {
@@ -52,13 +53,9 @@ void Start_Testing() {
 	sd->camera.transform.scale = glm::vec2(2.0f, 2.0f);
 
 	// Set ground collision
-	sd->collisionGrid.Register(HitBox(-0.5f, 9.25f, 1.75f, 2.0f, HitBoxType::Ground));
-	sd->collisionGrid.Register(HitBox(9.25f, 9.75f, 1.25f, 1.75f, HitBoxType::Ramp));
-	sd->collisionGrid.Register(HitBox(9.75f, 20.0f, 1.25f, 1.75f, HitBoxType::Ground));
-
-	// Set up our scene objects
-	sd->collisionGrid.ConstructGrid();
-	sd->cameraController.SetFollowTarget(&sd->baby.transform, -1.5f, 0.2f, -0.5f, 2.0f);
+	//sd->collisionGrid.Register(HitBox(-0.5f, 9.25f, 1.75f, 2.0f, HitBoxType::Ground));
+	//sd->collisionGrid.Register(HitBox(9.25f, 9.75f, 1.25f, 1.75f, HitBoxType::Ramp));
+	//sd->collisionGrid.Register(HitBox(9.75f, 20.0f, 1.25f, 1.75f, HitBoxType::Ground));
 
 	// -- LEVEL RENDERER --
 	float levelY = 1.25f;
@@ -69,25 +66,39 @@ void Start_Testing() {
 	// Bushes
 	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 6 * 64, 0, 2 * 64, 3 * 64), glm::vec2(0.0f, levelY - 0.1f), 10, 0.1f);
 	// Ground
-	//sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 1 * 64, 1*64, 2 * 64, 1 * 64), glm::vec2(0.0f, levelY+0.5f ), 10, 0.0f);
-	sd->levelRenderer.AddStep([=](Renderer* rend) {
-		SubTexture st = SubTexture(atlas, 1 * 64, 1 * 64, 2 * 64, 1 * 64);
-		Transform t = Transform(glm::vec2(0.0f, levelY + 0.5f), glm::vec2(1.0f, 0.5f), 0.0f);
-		for (int i = 0; i < 10; i++) {
-			rend->DrawQuad(atlas, st, t.position, t.scale);
-			t.Translate(1.0f, 0.0f);
-		}
-		t.Translate(-0.5f, -0.25f);
-		rend->DrawQuad(atlas, SubTexture(atlas, 3 * 64, 0 * 64, 1 * 64, 2 * 64), t.position, glm::vec2(0.5f, 1.0f));
-		t.Translate(0.75f, -0.25f);
-		for (int i = 0; i < 10; i++) {
-			rend->DrawQuad(atlas, st, t.position, t.scale);
-			t.Translate(1.0f, 0.0f);
-		}
-		});
+	//sd->levelRenderer.AddStep([=](Renderer* rend) {
+	//	SubTexture st = SubTexture(atlas, 1 * 64, 1 * 64, 2 * 64, 1 * 64);
+	//	Transform t = Transform(glm::vec2(0.0f, levelY + 0.5f), glm::vec2(1.0f, 0.5f), 0.0f);
+	//	for (int i = 0; i < 10; i++) {
+	//		rend->DrawQuad(atlas, st, t.position, t.scale);
+	//		t.Translate(1.0f, 0.0f);
+	//	}
+	//	t.Translate(-0.5f, -0.25f);
+	//	rend->DrawQuad(atlas, SubTexture(atlas, 3 * 64, 0 * 64, 1 * 64, 2 * 64), t.position, glm::vec2(0.5f, 1.0f));
+	//	t.Translate(0.75f, -0.25f);
+	//	for (int i = 0; i < 10; i++) {
+	//		rend->DrawQuad(atlas, st, t.position, t.scale);
+	//		t.Translate(1.0f, 0.0f);
+	//	}
+	//	});
+
+
+	sd->levelBuilder.AddGround(SubTexture(atlas, 64, 64, 64, 64), 5);
+	sd->levelBuilder.AddUpRamp(SubTexture(atlas, 64 * 3, 0, 64, 128), 3);
+	sd->levelBuilder.AddGround(SubTexture(atlas, 64, 64, 64, 64), 5);
+
+	for (int i = 0; i < 10; i++) {
+		sd->levelBuilder.AddGround(SubTexture(atlas, 64, 64, 64, 64), 1);
+		sd->levelBuilder.AddUpRamp(SubTexture(atlas, 64 * 3, 0, 64, 128), 1);
+	}
+	sd->levelBuilder.Build();
 	// Baby
 	sd->levelRenderer.AddStep([](Renderer* rend) {sd->baby.Render(rend); });
 
+
+	// Set up our scene objects
+	sd->collisionGrid.ConstructGrid();
+	sd->cameraController.SetFollowTarget(&sd->baby.transform, -1.5f, 0.2f, -0.5f, 2.0f);
 
 }
 
