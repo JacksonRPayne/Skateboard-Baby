@@ -10,7 +10,8 @@ enum class HitBoxType {
 	Player = 2,
 	GrindRail = 3,
 	UpRamp = 4,
-	DownRamp = 5
+	DownRamp = 5,
+	SpitBall = 6
 };
 
 

@@ -10,9 +10,11 @@ struct Scene_Testing_Data {
 
 	// Entities
 	Baby baby;
+	Bully bully1;
 
 	void Update(float dt) {
 		baby.Update(dt);
+		bully1.Update(dt);
 		cameraController.Update(dt);
 	}
 
@@ -34,6 +36,7 @@ Scene_Testing_Data* sd = nullptr;
 void Load_Testing(){
 	// Load resources
 	ResourceManager::LoadTexture("res/textures/Baby.png", "baby");
+	ResourceManager::LoadTexture("res/textures/Bully.png", "bully");
 	ResourceManager::LoadTexture("res/textures/Background.png", "background");
 	ResourceManager::LoadTexture("res/textures/Tileset.png", "tileset");
 
@@ -41,7 +44,8 @@ void Load_Testing(){
 	sd = new Scene_Testing_Data();
 	new (&sd->camera) Camera(Window::width, Window::height);
 	new (&sd->collisionGrid) CollisionGrid(0.5f);
-	new (&sd->baby) Baby(0.0f, 1.25f, &sd->collisionGrid);
+	new (&sd->baby) Baby(-2.0f, 1.25f, &sd->collisionGrid);
+	new (&sd->bully1) Bully(1.0f, 1.25f, &sd->collisionGrid);
 	new (&sd->cameraController) CameraController(&sd->camera);
 	new (&sd->levelRenderer) LevelRenderer(&sd->camera, &sd->cameraController);
 	new (&sd->levelBuilder) LevelBuilder(glm::vec2(-4.0f, 1.95f), &sd->levelRenderer, &sd->collisionGrid, ResourceManager::GetTexture("tileset"));
@@ -78,10 +82,12 @@ void Start_Testing() {
 	sd->levelBuilder.AddGround(SubTexture(atlas, 64, 64, 64, 64), 15);
 	
 	sd->levelBuilder.Build();
-	
+
 	// Baby
 	sd->levelRenderer.AddStep([](Renderer* rend) {sd->baby.Render(rend); });
 
+	// Bully
+	sd->levelRenderer.AddStep([](Renderer* rend) {sd->bully1.Render(rend); });
 
 	// Set up our scene objects
 	sd->collisionGrid.ConstructGrid();

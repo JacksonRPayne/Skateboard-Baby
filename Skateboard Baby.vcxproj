@@ -136,6 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\game\entities\Bully.cpp" />
     <ClCompile Include="src\game\level\LevelBuilder.cpp" />
     <ClCompile Include="src\game\level\CameraController.cpp" />
     <ClCompile Include="src\game\level\LevelRenderer.cpp" />
@@ -166,6 +167,7 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\game\entities\Bully.h" />
     <ClInclude Include="src\game\level\LevelBuilder.h" />
     <ClInclude Include="src\game\level\CameraController.h" />
     <ClInclude Include="dependencies\glad\glad.h" />

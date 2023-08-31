@@ -122,6 +122,6 @@ glm::vec2 HitBox::ResolveDownRampY(const HitBox& thisHitBox, const HitBox& other
 	float yDiff = std::min(thisHitBox.BottomLeft().y - otherHitBox.TopBound(), otherHitBox.localTransform.scale.y);
 
 	float diff = yDiff - xDiff;
-
+	
 	return glm::vec2(0.0f, - diff);
 }

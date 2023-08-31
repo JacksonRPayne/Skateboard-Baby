@@ -4,6 +4,8 @@
 #include "graphics/Texture.h"
 
 
+// This is a much less necessary class than you might think for one called "Entity"
+// Right now its basically only used for hitboxes to have a parent entity
 class Entity
 {
 public:
