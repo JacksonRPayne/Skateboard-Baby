@@ -1,7 +1,7 @@
 #include "CameraController.h"
 
 CameraController::CameraController(Camera* camera)
-	: camera(camera), followTarget(nullptr), followBounds(), paralaxTargets(){
+	: camera(camera), followTarget(nullptr), followBounds(), paralaxTargets() {
 	minimumPos = camera->transform.position;
 }
 
@@ -32,8 +32,11 @@ void CameraController::Update(float dt) {
 	}
 
 	// Clamp cam position to minimum bounds
-	if ((camera->transform.position + camMovement).x < minimumPos.x || (camera->transform.position + camMovement).y > minimumPos.y) {
-		camMovement = minimumPos - camera->transform.position;
+	if ((camera->transform.position + camMovement).x < minimumPos.x) {
+		camMovement.x = minimumPos.x - camera->transform.position.x;
+	}
+	if ((camera->transform.position + camMovement).y > minimumPos.y){
+		camMovement.y = minimumPos.y - camera->transform.position.y;
 	}
 
 	// Move camera

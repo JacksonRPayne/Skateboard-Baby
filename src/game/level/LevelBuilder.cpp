@@ -21,7 +21,7 @@ void LevelBuilder::AddUpRamp(SubTexture tile, int count) {
 	tileMap.emplace_back(tile, TileType::UpRamp, count);
 	glm::vec2 scale = atlas->SubWorldSize(tile);
 	glm::vec2 totalScale = glm::vec2(scale.x, scale.x) * (float)count;
-	grid->Register(HitBox(currPos.x + totalScale.x/2 - scale.x/2, currPos.y - scale.x/2- totalScale.y / 2, totalScale.x, totalScale.y, nullptr, nullptr, nullptr, HitBoxType::Ramp));
+	grid->Register(HitBox(currPos.x + totalScale.x/2 - scale.x/2, currPos.y - scale.x/2- totalScale.y / 2, totalScale.x, totalScale.y, nullptr, nullptr, nullptr, HitBoxType::UpRamp));
 
 	currPos.x += totalScale.x;
 	currPos.y -= totalScale.y;
@@ -29,6 +29,12 @@ void LevelBuilder::AddUpRamp(SubTexture tile, int count) {
 
 void LevelBuilder::AddDownRamp(SubTexture tile, int count) {
 	tileMap.emplace_back(tile, TileType::DownRamp, count);
+	glm::vec2 scale = atlas->SubWorldSize(tile);
+	glm::vec2 totalScale = glm::vec2(scale.x, scale.x) * (float)count;
+	grid->Register(HitBox(currPos.x + totalScale.x / 2 - scale.x / 2, currPos.y - scale.x / 2 + totalScale.y / 2, totalScale.x, totalScale.y, nullptr, nullptr, nullptr, HitBoxType::DownRamp));
+
+	currPos.x += totalScale.x;
+	currPos.y += totalScale.y;
 }
 
 void LevelBuilder::Build() {
@@ -66,8 +72,17 @@ void LevelBuilder::Build() {
 			}
 
 			case TileType::DownRamp:
-
+			{
+				for (int _ = 0; _ < tileMap[i].count; _++) {
+					pos.y += 0.25f;
+					glm::vec2 scale = atlas->SubWorldSize(tileMap[i].subTexture);
+					// Moves "turtle"
+					pos.x += scale.x;
+					rend->DrawQuad(atlas, tileMap[i].subTexture, pos, scale);
+					pos.y += 0.25f;
+				}
 				break;
+			}
 			}
 		}
 	});

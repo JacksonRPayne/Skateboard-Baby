@@ -9,7 +9,8 @@ enum class HitBoxType {
 	Ground = 1,
 	Player = 2,
 	GrindRail = 3,
-	Ramp = 4
+	UpRamp = 4,
+	DownRamp = 5
 };
 
 
@@ -26,10 +27,13 @@ struct HitBox
 	// Check collision for different shapes
 	static bool BoxCollisionCheck(const HitBox& thisHitBox, const HitBox& otherHitBox);
 	static bool UpRampCollisionCheck(const HitBox& thisHitBox, const HitBox& otherHitBox);
+	static bool DownRampCollisionCheck(const HitBox& thisHitBox, const HitBox& otherHitBox);
 	// Resolves collisions for different shapes
 	static glm::vec2 ResolveBoxX(const HitBox& thisHitBox, const HitBox& otherHitBox);
 	static glm::vec2 ResolveUpRampX(const HitBox& thisHitBox, const HitBox& otherHitBox);
 	static glm::vec2 ResolveUpRampY(const HitBox& thisHitBox, const HitBox& otherHitBox);
+	static glm::vec2 ResolveDownRampX(const HitBox& thisHitBox, const HitBox& otherHitBox);
+	static glm::vec2 ResolveDownRampY(const HitBox& thisHitBox, const HitBox& otherHitBox);
 
 	// --Basic Functions--
 	// Defines collision checking behavior (is this a box or a ramp?)

@@ -47,9 +47,12 @@ void OnBodyCollisionExit (const HitBox& thisHitBox, const HitBox& otherHitBox) {
 }
 
 void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
-	if (otherHitBox.tag == HitBoxType::Ground) { 
+	switch (otherHitBox.tag) {
+	// GROUND
+	case HitBoxType::Ground:
+	{
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
-		
+
 		float yDiff = otherHitBox.TopBound() - thisHitBox.BottomBound();
 		// Move baby out of ground
 		baby->physicsController.Translate(0.0f, yDiff);
@@ -61,17 +64,16 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 		baby->balance = 0.0f;
 		baby->physicsController.multiplier.x = 1;
 
-		//baby->onRamp = false;
-
+		break;
 	}
-
-	else if (otherHitBox.tag == HitBoxType::Ramp) {
-		
+	// UP RAMP
+	case HitBoxType::UpRamp:
+	{
 		// So the rotation (collision exit) can be triggered by the box hitbox but the physics is the true ramp hitbox
 		if (!HitBox::UpRampCollisionCheck(thisHitBox, otherHitBox)) return;
 
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
-		
+
 		// If baby is moving side to side on ramp
 		if (baby->physicsController.velocity.x > baby->physicsController.velocity.y) {
 			baby->physicsController.Translate(HitBox::ResolveUpRampY(thisHitBox, otherHitBox));
@@ -94,24 +96,74 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 		baby->state = BabyState::Ground;
 		baby->balance = 0.0f;
 		// For rotation on ramp
-		baby->onRamp = true;
-
+		baby->onUpRamp = true;
+		
+		//baby->physicsController.multiplier.x = 1 / sqrt(2);
+		break;
 	}
-	else if (otherHitBox.tag == HitBoxType::GrindRail) {
+	// DOWN RAMP
+	case HitBoxType::DownRamp:
+	{
+		// So the rotation (collision exit) can be triggered by the box hitbox but the physics is the true ramp hitbox
+		if (!HitBox::DownRampCollisionCheck(thisHitBox, otherHitBox)) return;
+
+		Baby* baby = (Baby*)thisHitBox.parentEntity;
+
+		// If baby is moving side to side on ramp
+		if (-baby->physicsController.velocity.x > baby->physicsController.velocity.y) {
+			baby->physicsController.Translate(HitBox::ResolveDownRampY(thisHitBox, otherHitBox));
+
+			// This is genius. Make max y vel thrust from ramp be proportional to how far along u are on the ramp
+			// That way it only pops at the end and the ride up the ramp is mostly smooth
+			// If this doesn't work for long ramps, you could change the underlying function from being linear
+			float xDiff = std::min(thisHitBox.BottomLeft().x - otherHitBox.LeftBound(), otherHitBox.localTransform.scale.x);
+			float maxPop = std::min(-MAX_RAMP_POP + (xDiff / otherHitBox.localTransform.scale.x) * MAX_RAMP_POP, 0.0f);
+
+			// Provides "pop" of ramp
+			baby->physicsController.velocity.y = std::max(maxPop, baby->physicsController.velocity.y + baby->physicsController.velocity.x);
+		}
+		// Baby is simply sliding down ramp
+		else {
+			baby->physicsController.Translate(HitBox::ResolveDownRampX(thisHitBox, otherHitBox));
+		}
+
+		// Set ground state
+		baby->state = BabyState::Ground;
+		baby->balance = 0.0f;
+		// For rotation on ramp
+		baby->onDownRamp = true;
+		break;
+	}
+
+	// GRIND RAIL
+	case HitBoxType::GrindRail:
+	{
 		((Baby*)thisHitBox.parentEntity)->touchingRail = true;
 		((Baby*)thisHitBox.parentEntity)->railY = otherHitBox.BottomBound();
+
+		break;
 	}
+	}
+
+
 }
 
 void OnBoardCollisionExit(const HitBox& thisHitBox, const HitBox& otherHitBox) {
-	if (otherHitBox.tag == HitBoxType::Ramp) {
+	if (otherHitBox.tag == HitBoxType::UpRamp) {
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
-		baby->onRamp = false;
+		baby->onUpRamp = false;
+		//baby->physicsController.multiplier.x = 1;
+
 	}
-	if (otherHitBox.tag == HitBoxType::Ground) {
+	else if (otherHitBox.tag == HitBoxType::DownRamp) {
+		Baby* baby = (Baby*)thisHitBox.parentEntity;
+		baby->onDownRamp = false;
+	}
+	else if (otherHitBox.tag == HitBoxType::Ground) {
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
 		baby->grounded = false;
 	}
+
 }
 
 
@@ -129,7 +181,7 @@ Baby::Baby(float xPos, float yPos, CollisionGrid* grid, const std::string name, 
 	InitializeAnimations();
 	// Initialize hitboxes
 	bodyHitBox = grid->Register(HitBox(0.0f, 0.0f, 0.45f, 0.8f, this, OnBodyCollision, OnBodyCollisionExit));
-	boardHitBox = grid->Register(HitBox(0.0f, 0.4f, 0.5f, 0.2f, this, OnBoardCollision, OnBoardCollisionExit));
+	boardHitBox = grid->Register(HitBox(0.0f, 0.4f, 0.5f, 0.1f, this, OnBoardCollision, OnBoardCollisionExit));
 	physicsController.hitboxes.push_back(bodyHitBox->id);
 	physicsController.hitboxes.push_back(boardHitBox->id);
 }
@@ -200,7 +252,7 @@ void Baby::Update(float dt) {
 	CollisionGrid::currentGrid->CheckCollision(boardHitBox);
 
 	// Fall off platform changes to air state
-	if (physicsController.velocity.y > IN_AIR_THRESHOLD && !onRamp) {
+	if (physicsController.velocity.y > IN_AIR_THRESHOLD && !onUpRamp && !onDownRamp) {
 		state = BabyState::Air;
 	}
 
@@ -237,8 +289,12 @@ void Baby::Render(Renderer* renderer) {
 		sparks.GenerateSparks(transform.position + pos, direction, renderer, intensity);
 	}
 	// Rotate baby if moving on ramp (slightly more expensive to render)
-	if (onRamp && !grounded) {
+	if (onUpRamp && !grounded) {
 		transform.rotation = -45.0f;
+		renderer->DrawQuad(texture, subTexture, transform.GetModelMatrix());
+	}
+	else if (onDownRamp && !grounded) {
+		transform.rotation = 45.0f;
 		renderer->DrawQuad(texture, subTexture, transform.GetModelMatrix());
 	}
 	else renderer->DrawQuad(texture, subTexture, transform.position, transform.scale);
@@ -270,7 +326,7 @@ void Baby::ActivateJumpState() {
 void Baby::GroundedUpdate(float dt) {
 	
 	// Diff speeds for falling down ramp than falling off platform
-	if(onRamp)	physicsController.acceleration.y = RAMP_FALLSPEED;
+	if(onUpRamp || onDownRamp)	physicsController.acceleration.y = RAMP_FALLSPEED;
 	else physicsController.acceleration.y = FASTFALLSPEED;
 
 	// Gets directional input
@@ -326,7 +382,7 @@ void Baby::GroundedUpdate(float dt) {
 	}
 	
 	// Popping off a ramp
-	if (physicsController.velocity.y < 0.0f && !onRamp) {
+	if (physicsController.velocity.y < 0.0f && !onUpRamp && !onDownRamp) {
 		state = BabyState::Air;
 	}
 

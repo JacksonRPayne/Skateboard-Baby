@@ -46,10 +46,10 @@ glm::vec2 HitBox::GetGlobalPosition() const{
 }
 
 void HitBox::Render(Renderer* renderer) {
-	renderer->DrawLine(TopLeft(), TopRight(), 8.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-	renderer->DrawLine(TopRight(), BottomRight(), 8.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-	renderer->DrawLine(BottomRight(), BottomLeft(), 8.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-	renderer->DrawLine(BottomLeft(), TopLeft(), 8.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	renderer->DrawLine(TopLeft(), TopRight(), 5.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	renderer->DrawLine(TopRight(), BottomRight(), 5.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	renderer->DrawLine(BottomRight(), BottomLeft(), 5.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	renderer->DrawLine(BottomLeft(), TopLeft(), 5.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 }
 
 
@@ -79,6 +79,14 @@ bool HitBox::UpRampCollisionCheck(const HitBox& thisHitBox, const HitBox& otherH
 	return BoxCollisionCheck(thisHitBox, otherHitBox) && (xDiff + yDiff) > (otherHitBox.localTransform.scale.x);
 }
 
+bool HitBox::DownRampCollisionCheck(const HitBox& thisHitBox, const HitBox& otherHitBox) {
+	float xDiff = thisHitBox.BottomLeft().x - otherHitBox.LeftBound();
+	float yDiff = thisHitBox.BottomLeft().y - otherHitBox.TopBound();
+
+	// This one also hard to explain.... draw a diagram and remember that y increases downwardly
+	return BoxCollisionCheck(thisHitBox, otherHitBox) && yDiff > xDiff;
+}
+
 glm::vec2 HitBox::ResolveUpRampX(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 	// min prevents popping at the top
 	float xDiff = std::min(thisHitBox.BottomRight().x - otherHitBox.LeftBound(), otherHitBox.localTransform.scale.x);
@@ -86,6 +94,7 @@ glm::vec2 HitBox::ResolveUpRampX(const HitBox& thisHitBox, const HitBox& otherHi
 
 	float diff = xDiff + yDiff;
 
+	// I dont remember how I figured this out
 	return glm::vec2(otherHitBox.localTransform.scale.x - diff, 0.0f);
 }
 
@@ -96,4 +105,23 @@ glm::vec2 HitBox::ResolveUpRampY(const HitBox& thisHitBox, const HitBox& otherHi
 	float diff = xDiff + yDiff;
 
 	return glm::vec2(0.0f, otherHitBox.localTransform.scale.x - diff);
+}
+
+glm::vec2 HitBox::ResolveDownRampX(const HitBox& thisHitBox, const HitBox& otherHitBox){
+	// min prevents popping at the top
+	float xDiff = std::min(thisHitBox.BottomLeft().x - otherHitBox.LeftBound(), otherHitBox.localTransform.scale.x);
+	float yDiff = std::min(thisHitBox.BottomLeft().y - otherHitBox.TopBound(), otherHitBox.localTransform.scale.y);
+
+	float diff = yDiff - xDiff;
+
+	return glm::vec2(diff, 0.0f);
+}
+glm::vec2 HitBox::ResolveDownRampY(const HitBox& thisHitBox, const HitBox& otherHitBox) {
+	// min prevents popping at the top
+	float xDiff = std::min(thisHitBox.BottomLeft().x - otherHitBox.LeftBound(), otherHitBox.localTransform.scale.x);
+	float yDiff = std::min(thisHitBox.BottomLeft().y - otherHitBox.TopBound(), otherHitBox.localTransform.scale.y);
+
+	float diff = yDiff - xDiff;
+
+	return glm::vec2(0.0f, - diff);
 }
