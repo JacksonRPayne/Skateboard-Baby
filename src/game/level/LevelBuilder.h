@@ -5,7 +5,8 @@
 enum class TileType {
 	Ground,
 	UpRamp,
-	DownRamp
+	DownRamp,
+	UpRampCliff
 };
 
 // Stores a section of the tiles
@@ -34,6 +35,8 @@ public:
 	// Adding tiles (constructing the ground)
 	void AddGround(SubTexture tile, int count);
 	void AddUpRamp(SubTexture tile, int count);
+	// Doesn't adjust the ground level (placing a ground after will result in cliff
+	void AddUpRampCliff(SubTexture tile, int count);
 	void AddDownRamp(SubTexture tile, int count);
 
 	// Finalizes all changes, must be called at the end of adding tiles

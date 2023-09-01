@@ -45,7 +45,7 @@ void Load_Testing(){
 	new (&sd->camera) Camera(Window::width, Window::height);
 	new (&sd->collisionGrid) CollisionGrid(0.5f);
 	new (&sd->baby) Baby(-2.0f, 1.25f, &sd->collisionGrid);
-	new (&sd->bully1) Bully(1.0f, 1.25f, &sd->collisionGrid);
+	new (&sd->bully1) Bully(6.0f, 1.25f, &sd->collisionGrid);
 	new (&sd->cameraController) CameraController(&sd->camera);
 	new (&sd->levelRenderer) LevelRenderer(&sd->camera, &sd->cameraController);
 	new (&sd->levelBuilder) LevelBuilder(glm::vec2(-4.0f, 1.95f), &sd->levelRenderer, &sd->collisionGrid, ResourceManager::GetTexture("tileset"));
@@ -65,7 +65,9 @@ void Start_Testing() {
 	// Bushes
 	sd->levelRenderer.AddLoopingBackground(atlas, SubTexture(atlas, 6 * 64, 0, 2 * 64, 3 * 64), glm::vec2(0.0f, levelY - 0.1f), 10, 0.1f);
 	// Ground
-	sd->levelBuilder.AddGround(SubTexture(atlas, 64, 64, 64, 64), 11);
+	sd->levelBuilder.AddGround(SubTexture(atlas, 64, 64, 64, 64), 10);
+	sd->levelBuilder.AddUpRampCliff(SubTexture(atlas, 64 * 3, 0, 64, 128), 2);
+	sd->levelBuilder.AddGround(SubTexture(atlas, 64, 64, 64, 64), 18);
 	sd->levelBuilder.AddUpRamp(SubTexture(atlas, 64 * 3, 0, 64, 128), 11);
 	sd->levelBuilder.AddGround(SubTexture(atlas, 64, 64, 64, 64), 5);
 	sd->levelBuilder.AddDownRamp(SubTexture(atlas, 64 * 4, 0, 64, 128), 11);
@@ -88,6 +90,32 @@ void Start_Testing() {
 
 	// Bully
 	sd->levelRenderer.AddStep([](Renderer* rend) {sd->bully1.Render(rend); });
+
+	// Testing wall
+	sd->levelRenderer.AddStep([=](Renderer* rend) {
+		rend->DrawQuad(atlas, SubTexture(atlas, 64, 3 * 64, 64, 64 * 3), glm::vec2(3.0f, 1.0f), glm::vec2(0.5f, 1.5f));
+		});
+
+	// Testing grind rail
+	sd->levelRenderer.AddStep([=](Renderer* rend) {
+		for (int i = 0; i < 4; i++) {
+			glm::vec2 pos(3.5f + i * 0.5, 0.5f);
+			rend->DrawQuad(atlas, SubTexture(atlas, 2 * 64, 3 * 64, 64, 64), pos, glm::vec2(0.5f, 0.5f));
+		}
+		});
+
+	// Testing wall2
+	sd->levelRenderer.AddStep([=](Renderer* rend) {
+		rend->DrawQuad(atlas, SubTexture(atlas, 64*3, 3 * 64, 64, 64 * 3), glm::vec2(3.0f+2.5f, 1.0f), glm::vec2(0.5f, 1.5f));
+		});
+
+
+	// Testing wall 1hitbox
+	sd->collisionGrid.Register(HitBox(3.0f, 1.1f, 0.15f, 1.3f, nullptr, nullptr, nullptr, HitBoxType::Wall));
+	// Testing grind rail hitbox
+	sd->collisionGrid.Register(HitBox(3.25f + 1.0f, 0.125f, 2.5f, 0.5f, nullptr, nullptr, nullptr, HitBoxType::GrindRail));
+	// Testing wall 2 hitbox
+	sd->collisionGrid.Register(HitBox(3.0f + 2.5f,1.1f, 0.15f, 1.3f, nullptr, nullptr, nullptr, HitBoxType::Wall));
 
 	// Set up our scene objects
 	sd->collisionGrid.ConstructGrid();

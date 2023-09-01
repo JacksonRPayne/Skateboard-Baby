@@ -7,12 +7,14 @@ Bully::Bully(float xPos, float yPos, CollisionGrid* grid, const std::string name
 	subTexture = SubTexture(texture, 0, 0, 128, 128);
 
 	for (int i = 0; i < MAX_SPITBALLS; i++) {
-		spitBalls[i].active = false;
 		// Defines each transform starting at the bullys position
 		spitBalls[i].transform = Transform(transform.position.x, transform.position.y, 0.5f, 0.5f, 0.0f);
 		spitBalls[i].hitBox = grid->Register(HitBox(0.0f, 0.0f, 0.15f, 0.15f, nullptr, nullptr, nullptr, HitBoxType::SpitBall));
 		// Links each hitbox to each transform
 		spitBalls[i].hitBox->parentTransform = &spitBalls[i].transform;
+		// Makes sure spitball isn't active, as it hasn't been spit yet
+		spitBalls[i].active = false;
+		spitBalls[i].hitBox->active = false;
 	}
 }
 
@@ -49,6 +51,7 @@ void Bully::Update(float dt) {
 
 void Bully::FireSpitBall() {
 	spitBalls[nextSpitball].active = true;
+	spitBalls[nextSpitball].hitBox->active = true;
 	spitBalls[nextSpitball].transform.position = transform.position;
 
 	spitBallTimer = fireRate;

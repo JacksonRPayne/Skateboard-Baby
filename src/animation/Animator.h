@@ -37,9 +37,8 @@ public:
 	void AddAnimation(const std::string &name, Animation* animation);
 	void Update(float dt);
 	void PlayAnimation(const std::string& animation, bool looping, bool interruptible);
-	// Plays the animation only if it's not already playing
-	// The preffered method to call
-	void PlayOnce(const std::string& animation, bool looping, bool interruptible); // TODO: the worst name ever pls change API
+	// PREFFERED METHOD: Plays the animation only if it's not already playing
+	void PlayOrContinue(const std::string& animation, bool looping, bool interruptible);
 	bool PlayingAnimation() { return playingAnimation; }
 	// Invoked at end of animation
 	void AnimEndCallback();

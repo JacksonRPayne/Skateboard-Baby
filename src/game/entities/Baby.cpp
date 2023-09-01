@@ -20,6 +20,11 @@
 #define GRIND_BONUS_SPEED 0.5f
 #define GRIND_MAX_SPEED 5.5f
 
+// Wall constants
+#define WALL_SLIDE_FALLSPEED 6.0f
+#define WALL_JUMP_X_VEL 0.8f;
+#define WALL_JUMP_USER_INPUT 0.8f
+
 // Balance meter
 #define METER_HEIGHT 0.12f
 #define BALANCE_TILT_FACTOR 0.8f
@@ -143,25 +148,63 @@ void OnBoardCollision(const HitBox& thisHitBox, const HitBox& otherHitBox) {
 
 		break;
 	}
+
+	// WALL
+	case HitBoxType::Wall:
+	{
+		Baby* baby = (Baby*)thisHitBox.parentEntity;
+		float xDiff = 0.0f;
+
+		// Coming from the left side
+		if (thisHitBox.GetGlobalPosition().x < otherHitBox.GetGlobalPosition().x) {
+			xDiff = otherHitBox.LeftBound() - thisHitBox.RightBound();
+			baby->wallDirection = -1.0f;
+		}
+		// Coming from the right side
+		else {
+			xDiff =  otherHitBox.RightBound() - thisHitBox.LeftBound();
+			baby->wallDirection = 1.0f;
+		}
+
+		baby->physicsController.Translate(xDiff, 0.0f);
+		baby->touchingWall = true;
+		baby->wallX = baby->transform.position.x + xDiff;
+
+		break;
+	}
 	}
 
 
 }
 
 void OnBoardCollisionExit(const HitBox& thisHitBox, const HitBox& otherHitBox) {
-	if (otherHitBox.tag == HitBoxType::UpRamp) {
+	
+	switch (otherHitBox.tag) {
+	case HitBoxType::Ground:
+	{
+		Baby* baby = (Baby*)thisHitBox.parentEntity;
+		baby->grounded = false;
+		break;
+	}
+	case HitBoxType::UpRamp:
+	{
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
 		baby->onUpRamp = false;
 		//baby->physicsController.multiplier.x = 1;
-
+		break;
 	}
-	else if (otherHitBox.tag == HitBoxType::DownRamp) {
+	case HitBoxType::DownRamp:
+	{
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
 		baby->onDownRamp = false;
+		break;
 	}
-	else if (otherHitBox.tag == HitBoxType::Ground) {
+	case HitBoxType::Wall:
+	{
 		Baby* baby = (Baby*)thisHitBox.parentEntity;
-		baby->grounded = false;
+		baby->touchingWall = false;
+		break;
+	}
 	}
 
 }
@@ -251,11 +294,6 @@ void Baby::Update(float dt) {
 	CollisionGrid::currentGrid->CheckCollision(bodyHitBox);
 	CollisionGrid::currentGrid->CheckCollision(boardHitBox);
 
-	// Fall off platform changes to air state
-	if (physicsController.velocity.y > IN_AIR_THRESHOLD && !onUpRamp && !onDownRamp) {
-		state = BabyState::Air;
-	}
-
 	// Different update functions based on current state
 	switch (state)
 	{
@@ -270,6 +308,9 @@ void Baby::Update(float dt) {
 		break;
 	case BabyState::FallOffRail:
 		FallOfRailUpdate(dt);
+		break;
+	case BabyState::WallSlide:
+		WallSlideUpdate(dt);
 		break;
 	}
 
@@ -325,19 +366,28 @@ void Baby::ActivateJumpState() {
 
 void Baby::GroundedUpdate(float dt) {
 	
+	// Fall off platform changes to air state
+	if (physicsController.velocity.y > IN_AIR_THRESHOLD && !onUpRamp && !onDownRamp) {
+		state = BabyState::Air;
+	}
+
 	// Diff speeds for falling down ramp than falling off platform
 	if(onUpRamp || onDownRamp)	physicsController.acceleration.y = RAMP_FALLSPEED;
 	else physicsController.acceleration.y = FASTFALLSPEED;
 
 	// Gets directional input
 	float inputDir = InputDirection();
-	if (inputDir && !InputCrouch()) {
+	if (touchingWall) {
+		physicsController.acceleration.x = 0;
+		physicsController.velocity.x = 0;
+	}
+	else if (inputDir && !InputCrouch()) {
 		// Direction player is facing
 		direction = inputDir;
 		// Direction player is actually moving
 		float velSign = physicsController.velocity.x >= 0 ? 1.0f : -1.0f;
 		bool atMaxVel = std::abs(physicsController.velocity.x) >= MAX_GROUND_VELOCITY;
-		animator.PlayOnce("ride", true, true);
+		animator.PlayOrContinue("ride", true, true);
 		transform.SetScaleX(direction);
 		// Hit max velocity -> set velocity to max
 		if (atMaxVel) {
@@ -351,22 +401,22 @@ void Baby::GroundedUpdate(float dt) {
 	}
 	// No key pressed but moving -> apply friction
 	else if (std::abs(physicsController.velocity.x > 0)) { 
-		animator.PlayOnce("idle", true, true);
+		animator.PlayOrContinue("idle", true, true);
 		physicsController.acceleration.x = -GROUND_FRICTION;
 	}
 	else if (std::abs(physicsController.velocity.x < 0)) {
-		animator.PlayOnce("idle", true, true);
+		animator.PlayOrContinue("idle", true, true);
 		physicsController.acceleration.x = GROUND_FRICTION;
 	}
 	// Completely still
 	else {
-		animator.PlayOnce("idle", true, true);
+		animator.PlayOrContinue("idle", true, true);
 		physicsController.acceleration.x = 0;
 	}
 
 	// Crouch
 	if (InputCrouch()) {
-		animator.PlayOnce("crouch", true, true);
+		animator.PlayOrContinue("crouch", true, true);
 		// Adjust hitbox to crouch
 		bodyHitBox->localTransform.SetScaleY(0.7f);
 		bodyHitBox->localTransform.SetPositionY(0.05f);
@@ -406,18 +456,24 @@ void Baby::AirUpdate(float dt) {
 		transform.SetPositionY(railY-transform.GetScale().y/2.0f);
 		
 		state = BabyState::Grind;
-		animator.PlayOnce("grind", true, true);
+		animator.PlayOrContinue("grind", true, true);
+	}
+	// Comes in contact with a wall
+	else if (touchingWall) {
+		state = BabyState::WallSlide;
+		// Cancels all downward velocity
+		physicsController.velocity.y = std::min(physicsController.velocity.y, 0.0f);
 	}
 	// In the air
 	else {
 		// Changes to fastfall speed at peak of jump
 		if (physicsController.velocity.y < 0) {
 			physicsController.acceleration.y = FALLSPEED;
-			animator.PlayOnce("jumpAscend", false, true);
+			animator.PlayOrContinue("jumpAscend", false, true);
 		}
 		else {
 			physicsController.acceleration.y = FASTFALLSPEED;
-			animator.PlayOnce("jumpDescend", false, true);
+			animator.PlayOrContinue("jumpDescend", false, true);
 		}
 	}
 
@@ -443,7 +499,7 @@ void Baby::GrindUpdate(float dt) {
 	}
 	// Crouch
 	else if (InputCrouch()) {
-		animator.PlayOnce("crouch", true, true);
+		animator.PlayOrContinue("crouch", true, true);
 		bodyHitBox->localTransform.SetScaleY(0.7f);
 		bodyHitBox->localTransform.SetPositionY(0.05f);
 		// Charge jump
@@ -475,6 +531,30 @@ void Baby::FallOfRailUpdate(float dt) {
 	if (InputManager::GetGamepadButton(GLFW_GAMEPAD_BUTTON_START)) {
 		state = BabyState::Ground;
 		balance = 0.0f;
+	}
+}
+
+void Baby::WallSlideUpdate(float dt) {
+	// Wall slide gravity
+	physicsController.acceleration.y = WALL_SLIDE_FALLSPEED;
+	// Make x position stay exactly on wall
+	physicsController.acceleration.x = 0;
+	physicsController.velocity.x = 0;
+	transform.position.x = wallX;
+	// Animate and put direction facing away from wall
+	animator.PlayOrContinue("grind", true, true);
+	transform.scale.x = wallDirection;
+	direction = wallDirection;
+	// Wall jump
+	if (InputCrouchDown()) {
+		nextJumpVel = JUMP_VEL;
+		// Idk why I'm doing it like this but for some reason its broken if you put it on one line
+		float userInput =  InputDirectionRaw() * WALL_JUMP_USER_INPUT;
+		float xBoost = direction * WALL_JUMP_X_VEL;
+		float total = xBoost + userInput;
+		physicsController.velocity.x += total;
+		ActivateJumpState();
+
 	}
 }
 
@@ -524,6 +604,10 @@ float Baby::InputDirectionRaw() {
 
 bool Baby::InputCrouch() {
 	return InputManager::GetKey(GLFW_KEY_SPACE) || InputManager::GetGamepadButton(GLFW_GAMEPAD_BUTTON_A);
+}
+
+bool Baby::InputCrouchDown() {
+	return InputManager::GetKeyDown(GLFW_KEY_SPACE) || InputManager::GetGamepadButtonDown(GLFW_GAMEPAD_BUTTON_A);
 }
 
 bool Baby::InputJump() {

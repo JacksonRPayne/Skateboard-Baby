@@ -11,7 +11,8 @@ enum class HitBoxType {
 	GrindRail = 3,
 	UpRamp = 4,
 	DownRamp = 5,
-	SpitBall = 6
+	Wall = 6,
+	SpitBall = 7
 };
 
 
@@ -19,6 +20,7 @@ struct HitBox
 {
 	// -- Constructors --
 	HitBox();
+	// TODO: constructor definitions are stupid and make shit weird. 
 	HitBox(float xPos, float yPos, float xScale, float yScale, Entity* parent,
 		void(*callback)(const HitBox& thisHitBox, const HitBox& otherHitBox),  
 		void(*exitCallback)(const HitBox& thisHitBox, const HitBox& otherHitBox), HitBoxType tag=HitBoxType::None);

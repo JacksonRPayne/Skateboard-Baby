@@ -1,3 +1,5 @@
+#pragma once
+
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <glm/glm.hpp>
@@ -12,7 +14,7 @@
 #define MAX_GAMEPAD_AXES 6
 #define MAX_GAMEPAD_BUTTONS 14
 
-#pragma once
+
 class InputManager
 {
 public:

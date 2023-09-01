@@ -12,7 +12,8 @@ enum class BabyState {
 	Ground = 0,
 	Air = 1,
 	Grind = 2,
-	FallOffRail = 3
+	FallOffRail = 3,
+	WallSlide = 4
 };
 
 class Baby : public Entity
@@ -37,8 +38,15 @@ public:
 	
 	// ----State variables----
 	BabyState state;
-	// If currently colliding with a ground hitbox
+	// State of being in certain hitboxes
 	bool grounded = false;
+	bool onUpRamp = false;
+	bool onDownRamp = false;
+	bool touchingWall = false;
+	// Stores the x position baby should slide down the wall at
+	float wallX = 0.0f;
+	// Stores which side of the wall the baby is sliding on
+	float wallDirection = 0.0f;
 	// For facing direction not moving direction
 	float direction;
 	Animator animator;
@@ -48,9 +56,7 @@ public:
 	float balance = 0.0f; // -1/1 == fall
 	// For jump charging
 	float nextJumpVel;
-	// State of being on ramps
-	bool onUpRamp = false;
-	bool onDownRamp = false;
+
 
 private:
 	// Update for different states
@@ -59,6 +65,7 @@ private:
 	void GrindUpdate(float dt);
 	void UpdateBalanceMeter(float dt);
 	void FallOfRailUpdate(float dt);
+	void WallSlideUpdate(float dt);
 
 	// For state transition
 	void ActivateJumpState();
@@ -72,6 +79,7 @@ private:
 
 	// Abstracted input for support of multiple controllers
 	bool InputCrouch();
+	bool InputCrouchDown();
 	bool InputJump();
 	bool InputGrind();
 	// Returns direction (-1, 1)

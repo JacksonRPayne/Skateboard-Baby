@@ -75,7 +75,7 @@ void Animator::AddAnimation(const std::string &name, Animation* animation) {
 	animMap[name] = animation;
 }
 
-void Animator::PlayOnce(const std::string& animation, bool looping, bool interruptible) {
+void Animator::PlayOrContinue(const std::string& animation, bool looping, bool interruptible) {
 	// Only plays if not currently playing
 	if (!currentAnimation || currentAnimation->name != animation) PlayAnimation(animation, looping, interruptible);
 }
